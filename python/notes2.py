@@ -117,6 +117,12 @@ def command_loop(notes_dir):
 
             if command == "quit":
                 break
+            if command == "new":
+                create_new_note(notes_dir)
+                continue
+            if command == "list":
+                list_notes(notes_dir)
+                continue
             if command == "help":
                 show_help()
                 continue
