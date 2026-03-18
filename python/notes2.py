@@ -44,8 +44,8 @@ sound           - Read a wave and revise if you wish
 reshape         - Rewrite a wave from bow to stern
 sink            - Send a wave below by title
 captain         - Reveal the active Sailor ID
-wash-id         - Wash Sailor ID marks from all waves
-rename-id       - Rename Sailor ID marks across waves
+mutiny          - Wash Sailor ID marks from all waves
+promote-sailor       - Promote Sailor ID marks across waves
 tides           - List every wave in your harbor
 dock            - Return to shore
 
@@ -144,10 +144,10 @@ def command_loop(notes_dir):
             if command in ("captain", "user-id"):
                 show_current_user_id()
                 continue
-            if command in ("wash-id", "delete-id"):
+            if command in ("mutiny", "delete-id"):
                 delete_user_id_from_notes(notes_dir)
                 continue
-            if command in ("rename-id", "change-id"):
+            if command in ("promote-sailor", "change-id"):
                 change_user_id_in_notes(notes_dir)
                 continue
 
