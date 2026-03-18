@@ -5,7 +5,7 @@ from pathlib import Path
 
 def setup():
     """Initialize the notes application."""
-    print("Nate Ocean Notes Manager v1.2")
+    print("Nate Ocean Notes Manager v1.4")
     print("=" * 40)
 
     notes_dir = Path.home() / ".notes"
@@ -239,18 +239,17 @@ def create_new_note(notes_dir):
         print("Note title cannot be empty.")
         return
 
-    content = input("Enter note content (end with an empty line):\n")
-    lines = []
-    while True:
-        line = input()
-        if line == "":
-            break
-        lines.append(line)
-    content += "\n".join(lines)
+    content = input("Enter note content: ").strip()
+    if not content:
+        print("Note content cannot be empty.")
+        return
 
     labeled_content = label_note_with_user_id(content)
 
-    note_file = notes_dir / f"{title}.md"
+    notes_subdir = notes_dir / "notes"
+    target_dir = notes_subdir if notes_subdir.exists() else notes_dir
+
+    note_file = target_dir / f"{title}.md"
     note_file.write_text(labeled_content)
     print(f"Note '{title}' created successfully at {note_file}.")
 
