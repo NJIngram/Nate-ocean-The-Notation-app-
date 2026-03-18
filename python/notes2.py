@@ -1,4 +1,5 @@
 import re
+import shlex
 import sys
 import os
 from pathlib import Path
@@ -15,19 +16,21 @@ PRIMARY_NOTE_EXTENSION = ".md"
 
 USER_ID_FOOTER_LABEL = "Sailor ID"
 PROMPT_LABEL = "current> "
+READ_TITLE_PROMPT = "Name the wave to read: "
+COMMAND_ROUTE_PROMPT_KEY = "help"
 
 COMMAND_ALIASES = {
-    "quit": ("dock", "quit"),
-    "new": ("cast", "new"),
-    "read": ("sound", "read"),
-    "delete": ("sink", "delete"),
-    "edit": ("reshape", "edit"),
-    "list": ("tides", "list"),
-    "help": ("chart", "help"),
-    "user-id": ("captain", "user-id"),
-    "delete-id": ("wash-id", "delete-id"),
-    "change-id": ("rename-id", "change-id"),
-    "save": ("bottle", "save"),
+    "quit": ("dock", "quit", "q"),
+    "new": ("cast", "new", "n"),
+    "read": ("sound", "read", "r"),
+    "delete": ("sink", "delete", "d"),
+    "edit": ("reshape", "edit", "e"),
+    "list": ("tides", "list", "l"),
+    "help": ("chart", "help", "h"),
+    "user-id": ("captain", "user-id", "u"),
+    "delete-id": ("wash-id", "delete-id", "w"),
+    "change-id": ("rename-id", "change-id", "c"),
+    "save": ("bottle", "save", "s"),
 }
 
 
@@ -39,6 +42,24 @@ def command_is(command, key):
 def get_primary_command(key):
     """Return the canonical command word for the given command key."""
     return COMMAND_ALIASES[key][0]
+
+
+def parse_command_input(raw_input):
+    """Parse user input into a command token and optional argument text."""
+    if not raw_input:
+        return "", ""
+
+    try:
+        parts = shlex.split(raw_input)
+    except ValueError:
+        return "", ""
+
+    if not parts:
+        return "", ""
+
+    command = parts[0].lower()
+    argument = " ".join(parts[1:]).strip()
+    return command, argument
 
 
 def get_target_notes_dir(notes_dir):
@@ -203,7 +224,8 @@ def command_loop(notes_dir):
     """Main command loop for processing user input."""
     while True:
         try:
-            command = input(PROMPT_LABEL).strip().lower()
+            raw_command = input(PROMPT_LABEL).strip()
+            command, argument = parse_command_input(raw_command)
 
             if not command:
                 continue
@@ -214,7 +236,7 @@ def command_loop(notes_dir):
                 create_new_note(notes_dir)
                 continue
             if command_is(command, "read"):
-                read_note(notes_dir)
+                read_note(notes_dir, argument)
                 continue
             if command_is(command, "delete"):
                 delete_note(notes_dir)
@@ -244,7 +266,7 @@ def command_loop(notes_dir):
                 continue
 
             print(f"The sea does not know this command: '{command}'")
-            print(f"Type '{get_primary_command('help')}' to view your route.")
+            print(f"Type '{get_primary_command(COMMAND_ROUTE_PROMPT_KEY)}' to view your route.")
 
         except EOFError:
             print()
@@ -391,9 +413,9 @@ def edit_note(notes_dir):
     else:
         print(f"Wave '{title}' was not found in this harbor.")
 
-def read_note(notes_dir):
+def read_note(notes_dir, title=""):
     """Read a note by title, then optionally append or change text."""
-    title = input("Name the wave to read: ").strip()
+    title = title.strip() if title else input(READ_TITLE_PROMPT).strip()
     if not title:
         print("Wave title cannot be empty.")
         return
@@ -475,6 +497,8 @@ def main():
     notes_dir = setup()
     command_loop(notes_dir)
     finish()
+
+    print("NateFail: This line should not be reached. Check command loop for proper exit conditions.")
 
 if __name__ == "__main__":
     main()
