@@ -3,12 +3,99 @@ import sys
 import os
 from pathlib import Path
 
+APP_NAME = "Nate Ocean: A Sea of Thoughts"
+APP_VERSION = "1.5"
+STARTUP_DIVIDER_WIDTH = 40
+LIST_DIVIDER_WIDTH = 60
+
+ROOT_NOTES_DIR_NAME = ".notes"
+NESTED_NOTES_DIR_NAME = "notes"
+NOTE_EXTENSIONS = (".md", ".note", ".txt")
+PRIMARY_NOTE_EXTENSION = ".md"
+
+USER_ID_FOOTER_LABEL = "Sailor ID"
+PROMPT_LABEL = "current> "
+
+COMMAND_ALIASES = {
+    "quit": ("dock", "quit"),
+    "new": ("cast", "new"),
+    "read": ("sound", "read"),
+    "delete": ("sink", "delete"),
+    "edit": ("reshape", "edit"),
+    "list": ("tides", "list"),
+    "help": ("chart", "help"),
+    "user-id": ("captain", "user-id"),
+    "delete-id": ("wash-id", "delete-id"),
+    "change-id": ("rename-id", "change-id"),
+    "save": ("bottle", "save"),
+}
+
+
+def command_is(command, key):
+    """Return True when the entered command matches configured aliases."""
+    return command in COMMAND_ALIASES[key]
+
+
+def get_primary_command(key):
+    """Return the canonical command word for the given command key."""
+    return COMMAND_ALIASES[key][0]
+
+
+def get_target_notes_dir(notes_dir):
+    """Return the write target directory for note files."""
+    nested_dir = notes_dir / NESTED_NOTES_DIR_NAME
+    return nested_dir if nested_dir.exists() else notes_dir
+
+
+def get_search_dirs(notes_dir):
+    """Return directories that should be searched for notes."""
+    nested_dir = notes_dir / NESTED_NOTES_DIR_NAME
+    return [nested_dir] if nested_dir.exists() else [notes_dir]
+
+
+def get_note_files(notes_dir):
+    """Return all note files using configured file extensions."""
+    note_files = []
+    for search_dir in get_search_dirs(notes_dir):
+        for ext in NOTE_EXTENSIONS:
+            note_files.extend(search_dir.glob(f"*{ext}"))
+    return note_files
+
+
+def find_note_file(notes_dir, title):
+    """Find a note by title using the primary note extension."""
+    for search_dir in get_search_dirs(notes_dir):
+        note_file = search_dir / f"{title}{PRIMARY_NOTE_EXTENSION}"
+        if note_file.exists():
+            return note_file
+    return None
+
+
+def build_user_footer(user_id):
+    """Build the trailing footer block for note attribution."""
+    return f"\n\n---\n{USER_ID_FOOTER_LABEL}: {user_id}"
+
+
+def get_user_footer_strip_regex():
+    """Regex for stripping the user footer from note content."""
+    return rf'\n\n---\n{re.escape(USER_ID_FOOTER_LABEL)}: [^\n]*\n?$'
+
+
+def get_user_footer_replace_regex():
+    """Regex for replacing the user footer value in note content."""
+    return rf'(\n\n---\n{re.escape(USER_ID_FOOTER_LABEL)}: )[^\n]*'
+
+
+def get_user_footer_capture_regex():
+    """Regex for capturing the full user footer at the end of note content."""
+    return rf'(\n\n---\n{re.escape(USER_ID_FOOTER_LABEL)}: [^\n]*\n?)$'
+
 def setup():
     """Initialize the notes application."""
-    print("Nate Ocean: A Sea of Thoughts v1.5")
-    print("=" * 40)
+    print(f"{APP_NAME} v{APP_VERSION}")
+    print("=" * STARTUP_DIVIDER_WIDTH)
 
-    notes_dir = Path.home() / ".notes"
+    notes_dir = Path.home() / ROOT_NOTES_DIR_NAME
 
     # Check if notes directory exists
     if not notes_dir.exists():
@@ -30,7 +117,7 @@ def get_current_user_id():
 def label_note_with_user_id(note_content):
     """Append the current user ID to the note content."""
     user_id = get_current_user_id()
-    labeled_content = f"{note_content}\n\n---\nSailor ID: {user_id}"
+    labeled_content = f"{note_content}{build_user_footer(user_id)}"
     return labeled_content
 
 #When help command is called, it should show the new commands for user ID management
@@ -50,7 +137,7 @@ tides           - List every wave in your harbor
 dock            - Return to shore
 
 Old aliases still accepted:
-help new read edit delete user-id delete-id change-id list quit
+help new read edit delete user-id delete-id change-id list quit save
 """
     print(help_text)
 
@@ -66,7 +153,7 @@ def delete_user_id_from_notes(notes_dir):
         print(f"Harbor not found at {notes_dir}")
         return
 
-    note_files = list(notes_dir.glob("*.md")) + list(notes_dir.glob("*.txt"))
+    note_files = get_note_files(notes_dir)
     if not note_files:
         print("No notes are currently floating in this harbor.")
         return
@@ -74,7 +161,7 @@ def delete_user_id_from_notes(notes_dir):
     count = 0
     for note_file in note_files:
         content = note_file.read_text()
-        new_content = re.sub(r'\n\n---\nSailor ID: [^\n]*\n?$', '', content)
+        new_content = re.sub(get_user_footer_strip_regex(), '', content)
         if new_content != content:
             note_file.write_text(new_content)
             count += 1
@@ -93,7 +180,7 @@ def change_user_id_in_notes(notes_dir):
         print("No Sailor ID entered. Cancelling course change.")
         return
 
-    note_files = list(notes_dir.glob("*.md")) + list(notes_dir.glob("*.txt"))
+    note_files = get_note_files(notes_dir)
     if not note_files:
         print("No notes are currently floating in this harbor.")
         return
@@ -102,7 +189,7 @@ def change_user_id_in_notes(notes_dir):
     for note_file in note_files:
         content = note_file.read_text()
         new_content = re.sub(
-            r'(\n\n---\nSailor ID: )[^\n]*',
+            get_user_footer_replace_regex(),
             rf'\g<1>{new_id}',
             content
         )
@@ -116,54 +203,54 @@ def command_loop(notes_dir):
     """Main command loop for processing user input."""
     while True:
         try:
-            command = input("current> ").strip().lower()
+            command = input(PROMPT_LABEL).strip().lower()
 
             if not command:
                 continue
 
-            if command in ("dock", "quit"):
+            if command_is(command, "quit"):
                 break
-            if command in ("cast", "new"):
+            if command_is(command, "new"):
                 create_new_note(notes_dir)
                 continue
-            if command in ("sound", "read"):
+            if command_is(command, "read"):
                 read_note(notes_dir)
                 continue
-            if command in ("sink", "delete"):
+            if command_is(command, "delete"):
                 delete_note(notes_dir)
                 continue
-            if command in ("reshape", "edit"):
+            if command_is(command, "edit"):
                 edit_note(notes_dir)
                 continue
-            if command in ("bottle", "save"):
+            if command_is(command, "save"):
                 title = input("Name this wave: ").strip()
                 content = input("You released a bottled message into the tide: ").strip()
                 save_local_note(notes_dir, title, content)
                 continue
-            if command in ("tides", "list"):
+            if command_is(command, "list"):
                 list_notes(notes_dir)
                 continue
-            if command in ("chart", "help"):
+            if command_is(command, "help"):
                 show_help()
                 continue
-            if command in ("captain", "user-id"):
+            if command_is(command, "user-id"):
                 show_current_user_id()
                 continue
-            if command in ("wash-id", "delete-id"):
+            if command_is(command, "delete-id"):
                 delete_user_id_from_notes(notes_dir)
                 continue
-            if command in ("rename-id", "change-id"):
+            if command_is(command, "change-id"):
                 change_user_id_in_notes(notes_dir)
                 continue
 
             print(f"The sea does not know this command: '{command}'")
-            print("Type 'chart' to view your route.")
+            print(f"Type '{get_primary_command('help')}' to view your route.")
 
         except EOFError:
             print()
             break
         except KeyboardInterrupt:
-            print("\nUse 'dock' when you are ready to return ashore.")
+            print(f"\nUse '{get_primary_command('quit')}' when you are ready to return ashore.")
 
 
 def list_notes(notes_dir):
@@ -171,20 +258,14 @@ def list_notes(notes_dir):
     # Check if notes directory exists
     if not notes_dir.exists():
         print(f"Error: Harbor does not exist: {notes_dir}", file=sys.stderr)
-        print("Create it with: mkdir -p ~/.notes/notes", file=sys.stderr)
-        print("Then launch sample logs: cp test-notes/*.md ~/.notes/notes/", file=sys.stderr)
+        print(f"Create it with: mkdir -p ~/{ROOT_NOTES_DIR_NAME}/{NESTED_NOTES_DIR_NAME}", file=sys.stderr)
+        print(
+            f"Then launch sample logs: cp test-notes/*.md ~/{ROOT_NOTES_DIR_NAME}/{NESTED_NOTES_DIR_NAME}/",
+            file=sys.stderr,
+        )
         return False
 
-    # Look for notes in the notes directory (or directly in .notes)
-    notes_subdir = notes_dir / "notes"
-    search_dirs = [notes_subdir] if notes_subdir.exists() else [notes_dir]
-
-    # Find all note files (*.md, *.note, *.txt)
-    note_files = []
-    for search_dir in search_dirs:
-        note_files.extend(search_dir.glob("*.md"))
-        note_files.extend(search_dir.glob("*.note"))
-        note_files.extend(search_dir.glob("*.txt"))
+    note_files = get_note_files(notes_dir)
 
     if not note_files:
         print(f"No waves are charted in harbor {notes_dir}")
@@ -193,7 +274,7 @@ def list_notes(notes_dir):
 
     # Parse and display notes
     print(f"Tonight's sea log from harbor {notes_dir}:")
-    print("=" * 60)
+    print("=" * LIST_DIVIDER_WIDTH)
 
     for note_file in sorted(note_files):
         metadata = parse_yaml_header(note_file)
@@ -266,10 +347,9 @@ def create_new_note(notes_dir):
 
     labeled_content = label_note_with_user_id(content)
 
-    notes_subdir = notes_dir / "notes"
-    target_dir = notes_subdir if notes_subdir.exists() else notes_dir
+    target_dir = get_target_notes_dir(notes_dir)
 
-    note_file = target_dir / f"{title}.md"
+    note_file = target_dir / f"{title}{PRIMARY_NOTE_EXTENSION}"
     note_file.write_text(labeled_content)
     print(f"Wave '{title}' now drifts in your sea log at {note_file}.")
 
@@ -280,15 +360,7 @@ def delete_note(notes_dir):
         print("Wave title cannot be empty.")
         return
 
-    notes_subdir = notes_dir / "notes"
-    search_dirs = [notes_subdir] if notes_subdir.exists() else [notes_dir]
-
-    found_note = None
-    for search_dir in search_dirs:
-        note_file = search_dir / f"{title}.md"
-        if note_file.exists():
-            found_note = note_file
-            break
+    found_note = find_note_file(notes_dir, title)
 
     if found_note:
         found_note.unlink()
@@ -303,15 +375,7 @@ def edit_note(notes_dir):
         print("Wave title cannot be empty.")
         return
 
-    notes_subdir = notes_dir / "notes"
-    search_dirs = [notes_subdir] if notes_subdir.exists() else [notes_dir]
-
-    found_note = None
-    for search_dir in search_dirs:
-        note_file = search_dir / f"{title}.md"
-        if note_file.exists():
-            found_note = note_file
-            break
+    found_note = find_note_file(notes_dir, title)
 
     if found_note:
         content = found_note.read_text()
@@ -334,15 +398,7 @@ def read_note(notes_dir):
         print("Wave title cannot be empty.")
         return
 
-    notes_subdir = notes_dir / "notes"
-    search_dirs = [notes_subdir] if notes_subdir.exists() else [notes_dir]
-
-    found_note = None
-    for search_dir in search_dirs:
-        note_file = search_dir / f"{title}.md"
-        if note_file.exists():
-            found_note = note_file
-            break
+    found_note = find_note_file(notes_dir, title)
 
     if found_note:
         content = found_note.read_text()
@@ -352,7 +408,7 @@ def read_note(notes_dir):
         if edit_choice not in ("y", "yes"):
             return
 
-        footer_match = re.search(r'(\n\n---\nSailor ID: [^\n]*\n?)$', content)
+        footer_match = re.search(get_user_footer_capture_regex(), content)
         footer = footer_match.group(1) if footer_match else ""
         body = content[:-len(footer)].rstrip("\n") if footer else content.rstrip("\n")
 
@@ -402,10 +458,9 @@ def save_local_note(notes_dir, title, content):
 
     labeled_content = label_note_with_user_id(content)
 
-    notes_subdir = notes_dir / "notes"
-    target_dir = notes_subdir if notes_subdir.exists() else notes_dir
+    target_dir = get_target_notes_dir(notes_dir)
 
-    note_file = target_dir / f"{title}.md"
+    note_file = target_dir / f"{title}{PRIMARY_NOTE_EXTENSION}"
     note_file.write_text(labeled_content)
     print(f"Bottle '{title}' now drifts in your sea log at {note_file}.")
 
