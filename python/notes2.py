@@ -135,6 +135,11 @@ def command_loop(notes_dir):
             if command in ("reshape", "edit"):
                 edit_note(notes_dir)
                 continue
+            if command in ("bottle", "save"):
+                title = input("Name this wave: ").strip()
+                content = input("You released a bottled message into the tide: ").strip()
+                save_local_note(notes_dir, title, content)
+                continue
             if command in ("tides", "list"):
                 list_notes(notes_dir)
                 continue
@@ -385,6 +390,24 @@ def read_note(notes_dir):
         print(f"Wave '{title}' is saved, still afloat in your sea log.")
     else:
         print(f"Wave '{title}' was not found in this harbor.")
+#Save a note to the local files of a computer, labeled with the user ID of the person who created it, so that when the note is read later, it shows who created it.
+def save_local_note(notes_dir, title, content):
+    """Save a note with the given title and content, labeled with the current user ID."""
+    if not title:
+        print("Bottle title cannot be empty.")
+        return
+    if not content:
+        print("Bottle content cannot be empty.")
+        return
+
+    labeled_content = label_note_with_user_id(content)
+
+    notes_subdir = notes_dir / "notes"
+    target_dir = notes_subdir if notes_subdir.exists() else notes_dir
+
+    note_file = target_dir / f"{title}.md"
+    note_file.write_text(labeled_content)
+    print(f"Bottle '{title}' now drifts in your sea log at {note_file}.")
 
 def finish():
     """Clean up and exit the application."""
