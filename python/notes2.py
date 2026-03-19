@@ -3,6 +3,8 @@ import shlex
 import sys
 import os
 from pathlib import Path
+import subprocess
+import notes_core
 
 APP_NAME = "Nate Ocean: A Sea of Thoughts"
 APP_VERSION = "1.5"
@@ -19,6 +21,7 @@ PROMPT_LABEL = "current> "
 READ_TITLE_PROMPT = "Name the bottled message to read among the waves: "
 WASH_TITLE_PROMPT = "Name the bottled message to wash the captain mark from: "
 COMMAND_ROUTE_PROMPT_KEY = "help"
+ACTIVE_SAILOR_ID = os.getenv("USER") or os.getenv("USERNAME") or "unknown_user"
 
 COMMAND_ALIASES = {
     "quit": ("dock", "quit", "q"),
@@ -112,6 +115,12 @@ def get_user_footer_capture_regex():
     """Regex for capturing the full user footer at the end of note content."""
     return rf'(\n\n---\n{re.escape(USER_ID_FOOTER_LABEL)}: [^\n]*\n?)$'
 
+def open_note_in_editor(note_file):
+    """Open the note file in the system's default editor."""
+    editor = os.getenv("EDITOR", "nano")
+    subprocess.run([editor, str(note_file)])
+
+
 def setup():
     """Initialize the notes application."""
     print(f"{APP_NAME} v{APP_VERSION}")
@@ -132,8 +141,14 @@ def setup():
 
 #Code for reading current user ID and labeling notes with user ID at the bottom of the note
 def get_current_user_id():
-    """Get the current user ID from the environment."""
-    return os.getenv("USER") or os.getenv("USERNAME") or "unknown_user"
+    """Get the active Sailor ID for this app session."""
+    return ACTIVE_SAILOR_ID
+
+
+def set_current_user_id(new_id):
+    """Set the active Sailor ID for this app session."""
+    global ACTIVE_SAILOR_ID
+    ACTIVE_SAILOR_ID = new_id
 
 #Label notes with user ID at the bottom of the note
 def label_note_with_user_id(note_content):
@@ -154,7 +169,7 @@ reshape         - Rewrite a bottled message from bow to stern
 sink            - Send a bottled message below by title
 captain         - Reveal the active Sailor ID
 wash-id         - Wash Sailor ID mark from one bottled message
-rename-id       - Rename Sailor ID marks across bottled messages
+rename-id       - Set Sailor ID for current and future bottled messages
 tides           - List every bottled message in your harbor
 dock            - Return to shore
 
@@ -195,35 +210,16 @@ def delete_user_id_from_notes(notes_dir, title=""):
     print(f"Captain mark washed from bottled message '{title}'.")
 
 
-def change_user_id_in_notes(notes_dir):
-    """Change user ID in all notes to a new value entered by the user."""
-    if not notes_dir.exists():
-        print(f"Harbor not found at {notes_dir}")
-        return
+def change_user_id_in_notes(_notes_dir):
+    """Set Sailor ID for the current session and future notes."""
 
     new_id = input("Enter new Sailor ID: ").strip()
     if not new_id:
         print("No Sailor ID entered. Cancelling course change.")
         return
 
-    note_files = get_note_files(notes_dir)
-    if not note_files:
-        print("No notes are currently floating in this harbor.")
-        return
-
-    count = 0
-    for note_file in note_files:
-        content = note_file.read_text()
-        new_content = re.sub(
-            get_user_footer_replace_regex(),
-            rf'\g<1>{new_id}',
-            content
-        )
-        if new_content != content:
-            note_file.write_text(new_content)
-            count += 1
-
-    print(f"Updated Sailor ID to '{new_id}' in {count} note(s).")
+    set_current_user_id(new_id)
+    print(f"Active Sailor ID set to '{new_id}' for current and future bottled messages.")
 
 def command_loop(notes_dir):
     """Main command loop for processing user input."""
@@ -359,26 +355,20 @@ def parse_yaml_header(file_path):
         return {'title': file_path.name, 'file': file_path.name, 'error': str(e)}
     
 
-#Notation
+
 def create_new_note(notes_dir):
-    """Create a new note and label it with the current user ID."""
+    """Create a new note with user ID attribution."""
     title = input("Name this bottled message among the waves: ").strip()
     if not title:
         print("Bottled message title cannot be empty.")
         return
 
-    content = input("Pour a thought into the tide: ").strip()
+    content = input("You released a bottled message into the tide: ").strip()
     if not content:
         print("Bottled message content cannot be empty.")
         return
 
-    labeled_content = label_note_with_user_id(content)
-
-    target_dir = get_target_notes_dir(notes_dir)
-
-    note_file = target_dir / f"{title}{PRIMARY_NOTE_EXTENSION}"
-    note_file.write_text(labeled_content)
-    print(f"Bottled message '{title}' now drifts among the waves in your sea log at {note_file}.")
+    save_local_note(notes_dir, title, content)
 
 def delete_note(notes_dir):
     """Delete a note by title."""
@@ -387,10 +377,9 @@ def delete_note(notes_dir):
         print("Bottled message title cannot be empty.")
         return
 
-    found_note = find_note_file(notes_dir, title)
+    found_note = notes_core.delete_note(notes_dir, title)
 
     if found_note:
-        found_note.unlink()
         print(f"Bottled message '{title}' slipped beneath the surface.")
     else:
         print(f"Bottled message '{title}' was not found among the waves in this harbor.")
