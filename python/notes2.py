@@ -170,10 +170,9 @@ sound           - Read a bottled message among the waves and revise if you wish
 reshape         - Rewrite a bottled message from bow to stern
 sink            - Send a bottled message below by title
 captain         - Reveal the active Sailor ID
-wash-id         - Wash Sailor ID mark from one bottled message
-rename-id       - Set Sailor ID for current and future bottled messages
-tides           - List every bottled message in your harbor
-scan            - Search your harbor for bottled messages by word or phrase
+mutiny          - Wash Sailor ID marks from all waves
+promote-sailor       - Promote Sailor ID marks across waves
+tides           - List every wave in your harbor
 dock            - Return to shore
 
 Old aliases still accepted:
@@ -265,10 +264,10 @@ def command_loop(notes_dir):
             if command_is(command, "user-id"):
                 show_current_user_id()
                 continue
-            if command_is(command, "delete-id"):
-                delete_user_id_from_notes(notes_dir, argument)
+            if command in ("mutiny", "delete-id"):
+                delete_user_id_from_notes(notes_dir)
                 continue
-            if command_is(command, "change-id"):
+            if command in ("promote-sailor", "change-id"):
                 change_user_id_in_notes(notes_dir)
                 continue
 
