@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import notes_core
+from datetime import datetime, timezone
 
 APP_NAME = "Nate Ocean: A Sea of Thoughts"
 APP_VERSION = "1.5"
@@ -35,6 +36,7 @@ COMMAND_ALIASES = {
     "delete-id": ("wash", "wash-id", "mutiny", "delete-id", "w"),
     "change-id": ("promote", "change-id", "c"),
     "save": ("bottle", "save", "s"),
+    "search": ("scan", "search", "f"),
 }
 
 
@@ -171,10 +173,11 @@ captain         - Reveal the active Sailor ID
 wash-id         - Wash Sailor ID mark from one bottled message
 rename-id       - Set Sailor ID for current and future bottled messages
 tides           - List every bottled message in your harbor
+scan            - Search your harbor for bottled messages by word or phrase
 dock            - Return to shore
 
 Old aliases still accepted:
-help new read edit delete user-id delete-id change-id list quit save
+help new read edit delete user-id delete-id change-id list quit save search
 """
     print(help_text)
 
@@ -252,6 +255,9 @@ def command_loop(notes_dir):
                 continue
             if command_is(command, "list"):
                 list_notes(notes_dir)
+                continue
+            if command_is(command, "search"):
+                search_notes(notes_dir, argument)
                 continue
             if command_is(command, "help"):
                 show_help()
@@ -401,7 +407,12 @@ def edit_note(notes_dir):
             print("Bottled message content cannot be empty.")
             return
 
-        labeled_content = label_note_with_user_id(new_content)
+        frontmatter, _old_body = split_frontmatter(content)
+        if frontmatter:
+            frontmatter = update_modified_timestamp(frontmatter)
+        else:
+            frontmatter = build_frontmatter(title)
+        labeled_content = f"{frontmatter}{new_content}{build_user_footer(get_current_user_id())}"
         found_note.write_text(labeled_content)
         print(f"Bottled message '{title}' has been reshaped.")
     else:
@@ -458,11 +469,73 @@ def read_note(notes_dir, title=""):
             print("Unknown tidecraft. Use add, shift, or anchor.")
 
         updated_content = f"{body}{footer}" if footer else label_note_with_user_id(body)
+        updated_content = update_modified_timestamp(updated_content)
         found_note.write_text(updated_content)
         print(f"Bottled message '{title}' is saved, still afloat among the waves in your sea log.")
     else:
         print(f"Bottled message '{title}' was not found among the waves in this harbor.")
-#Save a note to the local files of a computer, labeled with the user ID of the person who created it, so that when the note is read later, it shows who created it.
+def build_frontmatter(title, tags=None):
+    """Build a YAML frontmatter string for a new note."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    tag_list = tags if tags else "[]"
+    return f"---\ntitle: {title}\ncreated: {now}\nmodified: {now}\ntags: {tag_list}\n---\n\n"
+
+
+def update_modified_timestamp(content):
+    """Update the modified timestamp in YAML frontmatter to now."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return re.sub(r'modified: .+', f'modified: {now}', content)
+
+
+def split_frontmatter(content):
+    """Split note content into (frontmatter, body) where frontmatter includes trailing newline."""
+    if not content.startswith("---\n"):
+        return "", content
+    end = content.find("\n---\n", 4)
+    if end == -1:
+        return "", content
+    fm_end = end + 5
+    frontmatter = content[:fm_end] + "\n"
+    body = content[fm_end:].lstrip("\n")
+    return frontmatter, body
+
+
+def search_notes(notes_dir, query=""):
+    """Search all notes for a word or phrase in content and metadata."""
+    query = query.strip() if query else input("Enter search term: ").strip()
+    if not query:
+        print("Search query cannot be empty.")
+        return
+
+    if not notes_dir.exists():
+        print(f"Harbor not found at {notes_dir}")
+        return
+
+    note_files = get_note_files(notes_dir)
+    if not note_files:
+        print("No bottled messages to search among the waves.")
+        return
+
+    matches = []
+    query_lower = query.lower()
+
+    for note_file in note_files:
+        content = note_file.read_text()
+        if query_lower in content.lower():
+            matches.append(note_file)
+
+    if not matches:
+        print(f"No bottled messages contain '{query}'.")
+        return
+
+    print(f"Found {len(matches)} bottled message(s) matching '{query}':")
+    print("=" * LIST_DIVIDER_WIDTH)
+    for note_file in sorted(matches):
+        metadata = parse_yaml_header(note_file)
+        title = metadata.get('title', note_file.name)
+        print(f"  {note_file.name} — {title}")
+
+
 def save_local_note(notes_dir, title, content):
     """Save a note with the given title and content, labeled with the current user ID."""
     if not title:
@@ -472,7 +545,8 @@ def save_local_note(notes_dir, title, content):
         print("Bottle content cannot be empty.")
         return
 
-    labeled_content = label_note_with_user_id(content)
+    frontmatter = build_frontmatter(title)
+    labeled_content = f"{frontmatter}{content}{build_user_footer(get_current_user_id())}"
 
     target_dir = get_target_notes_dir(notes_dir)
 
