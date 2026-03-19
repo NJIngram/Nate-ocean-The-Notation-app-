@@ -1,0 +1,149 @@
+from flask import Flask, jsonify, request, abort
+from pathlib import Path
+import os
+import signal
+import threading
+import time
+import notes2
+
+app = Flask(__name__, static_folder="static")
+
+# Use the same notes directory as the CLI app
+NOTES_DIR = Path.home() / notes2.ROOT_NOTES_DIR_NAME
+
+
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
+
+
+@app.route("/api/notes", methods=["GET"])
+def list_notes():
+    """Return a JSON array of all notes with their metadata."""
+    note_files = notes2.get_note_files(NOTES_DIR)
+    notes = []
+    for f in sorted(note_files):
+        metadata = notes2.parse_yaml_header(f)
+        notes.append(metadata)
+    return jsonify(notes)
+
+
+@app.route("/api/notes/<note_id>", methods=["GET"])
+def get_note(note_id):
+    """Return one note's metadata and content."""
+    note_file = notes2.find_note_file(NOTES_DIR, note_id)
+    if note_file is None:
+        abort(404, description=f"Note '{note_id}' not found")
+
+    content = note_file.read_text()
+    metadata = notes2.parse_yaml_header(note_file)
+    frontmatter, body = notes2.split_frontmatter(content)
+    metadata["content"] = body
+    return jsonify(metadata)
+
+
+@app.route("/api/notes", methods=["POST"])
+def create_note():
+    """Create a new note from JSON body."""
+    data = request.get_json()
+    if not data or "title" not in data or "content" not in data:
+        abort(400, description="Request must include 'title' and 'content'")
+
+    title = data["title"]
+    content = data["content"]
+
+    # Build the full note content using notes2 helpers
+    frontmatter = notes2.build_frontmatter(title)
+    user_id = data.get("author", notes2.get_current_user_id())
+    labeled = f"{frontmatter}{content}{notes2.build_user_footer(user_id)}"
+
+    target_dir = notes2.get_target_notes_dir(NOTES_DIR)
+    note_file = target_dir / f"{title}{notes2.PRIMARY_NOTE_EXTENSION}"
+    note_file.write_text(labeled)
+
+    return jsonify({"message": "Note created", "file": note_file.name}), 201
+
+
+@app.route("/api/notes/<note_id>", methods=["PUT"])
+def update_note(note_id):
+    """Update an existing note's content."""
+    data = request.get_json()
+    if not data or "content" not in data:
+        abort(400, description="Request must include 'content'")
+
+    note_file = notes2.find_note_file(NOTES_DIR, note_id)
+    if note_file is None:
+        abort(404, description=f"Note '{note_id}' not found")
+
+    old_content = note_file.read_text()
+    frontmatter, _old_body = notes2.split_frontmatter(old_content)
+    if frontmatter:
+        frontmatter = notes2.update_modified_timestamp(frontmatter)
+    else:
+        frontmatter = notes2.build_frontmatter(note_id)
+
+    user_id = data.get("author", notes2.get_current_user_id())
+    new_content = f"{frontmatter}{data['content']}{notes2.build_user_footer(user_id)}"
+    note_file.write_text(new_content)
+
+    return jsonify({"message": "Note updated", "file": note_file.name})
+
+
+@app.route("/api/notes/<note_id>", methods=["DELETE"])
+def delete_note(note_id):
+    """Delete a note by title."""
+    note_file = notes2.find_note_file(NOTES_DIR, note_id)
+    if note_file is None:
+        abort(404, description=f"Note '{note_id}' not found")
+
+    note_file.unlink()
+    return jsonify({"message": "Note deleted", "file": note_file.name})
+
+
+@app.route("/api/search", methods=["GET"])
+def search_notes():
+    """Search notes by keyword in content."""
+    query = request.args.get("q", "").strip()
+    if not query:
+        abort(400, description="Missing search query parameter 'q'")
+
+    note_files = notes2.get_note_files(NOTES_DIR)
+    results = []
+    query_lower = query.lower()
+
+    for f in note_files:
+        content = f.read_text()
+        if query_lower in content.lower():
+            metadata = notes2.parse_yaml_header(f)
+            results.append(metadata)
+
+    return jsonify({"query": query, "count": len(results), "results": results})
+
+
+# ── Heartbeat: shut down when the browser tab is closed ──────
+_last_heartbeat = time.time()
+_HEARTBEAT_TIMEOUT = 6  # seconds without a heartbeat before shutdown
+
+
+@app.route("/api/heartbeat", methods=["POST"])
+def heartbeat():
+    """Receive a keep-alive ping from the browser tab."""
+    global _last_heartbeat
+    _last_heartbeat = time.time()
+    return jsonify({"status": "ok"})
+
+
+def _heartbeat_watcher():
+    """Background thread that shuts down the server when heartbeats stop."""
+    while True:
+        time.sleep(2)
+        if time.time() - _last_heartbeat > _HEARTBEAT_TIMEOUT:
+            print("\nNo heartbeat — browser tab closed. Shutting down.")
+            os.kill(os.getpid(), signal.SIGTERM)
+            return
+
+
+if __name__ == "__main__":
+    watcher = threading.Thread(target=_heartbeat_watcher, daemon=True)
+    watcher.start()
+    app.run(debug=True, port=5001)
