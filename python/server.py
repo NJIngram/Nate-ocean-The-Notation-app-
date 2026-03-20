@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, abort
 from pathlib import Path
 import os
+import re
 import signal
 import threading
 import time
@@ -18,6 +19,7 @@ def index():
     return app.send_static_file("index.html")
 
 
+# ── Tides: list all notes ─────────────────────────
 @app.route("/api/notes", methods=["GET"])
 def list_notes():
     """Return a JSON array of all notes with their metadata."""
@@ -25,10 +27,14 @@ def list_notes():
     notes = []
     for f in sorted(note_files):
         metadata = notes2.parse_yaml_header(f)
+        # Backfill creator from author if missing
+        if "creator" not in metadata and "author" in metadata:
+            metadata["creator"] = metadata["author"]
         notes.append(metadata)
     return jsonify(notes)
 
 
+# ── Sound: read one note ──────────────────────────
 @app.route("/api/notes/<note_id>", methods=["GET"])
 def get_note(note_id):
     """Return one note's metadata and content."""
@@ -37,12 +43,24 @@ def get_note(note_id):
         abort(404, description=f"Note '{note_id}' not found")
 
     content = note_file.read_text()
+    # Backfill creator from author if missing
+    metadata_pre = notes2.parse_yaml_header(note_file)
+    if "creator" not in metadata_pre and "author" in metadata_pre:
+        content = notes2.update_yaml_field(content, "creator", metadata_pre["author"])
+    # Track who opened the note and when
+    content = notes2.touch_note_access(content)
+    note_file.write_text(content)
+
     metadata = notes2.parse_yaml_header(note_file)
     frontmatter, body = notes2.split_frontmatter(content)
     metadata["content"] = body
+    # Also expose creator from author for frontend
+    if "creator" not in metadata and "author" in metadata:
+        metadata["creator"] = metadata["author"]
     return jsonify(metadata)
 
 
+# ── Cast / Bottle: create a new note ──────────────
 @app.route("/api/notes", methods=["POST"])
 def create_note():
     """Create a new note from JSON body."""
@@ -53,9 +71,8 @@ def create_note():
     title = data["title"]
     content = data["content"]
 
-    # Build the full note content using notes2 helpers
-    frontmatter = notes2.build_frontmatter(title)
     user_id = data.get("author", notes2.get_current_user_id())
+    frontmatter = notes2.build_frontmatter(title, creator=user_id)
     labeled = f"{frontmatter}{content}{notes2.build_user_footer(user_id)}"
 
     target_dir = notes2.get_target_notes_dir(NOTES_DIR)
@@ -65,6 +82,7 @@ def create_note():
     return jsonify({"message": "Note created", "file": note_file.name}), 201
 
 
+# ── Reshape: update a note ────────────────────────
 @app.route("/api/notes/<note_id>", methods=["PUT"])
 def update_note(note_id):
     """Update an existing note's content."""
@@ -85,11 +103,14 @@ def update_note(note_id):
 
     user_id = data.get("author", notes2.get_current_user_id())
     new_content = f"{frontmatter}{data['content']}{notes2.build_user_footer(user_id)}"
+    # Track who edited the note and when
+    new_content = notes2.touch_note_access(new_content, user_id)
     note_file.write_text(new_content)
 
     return jsonify({"message": "Note updated", "file": note_file.name})
 
 
+# ── Sink: delete a note ───────────────────────────
 @app.route("/api/notes/<note_id>", methods=["DELETE"])
 def delete_note(note_id):
     """Delete a note by title."""
@@ -101,6 +122,7 @@ def delete_note(note_id):
     return jsonify({"message": "Note deleted", "file": note_file.name})
 
 
+# ── Scan: search notes ────────────────────────────
 @app.route("/api/search", methods=["GET"])
 def search_notes():
     """Search notes by keyword in content."""
@@ -121,9 +143,71 @@ def search_notes():
     return jsonify({"query": query, "count": len(results), "results": results})
 
 
+# ── Captain history ────────────────────────────────
+_captain_history: list[str] = []
+
+
+def _record_captain(sailor_id: str):
+    """Add a Sailor ID to the history (no duplicates, most recent first)."""
+    if sailor_id in _captain_history:
+        _captain_history.remove(sailor_id)
+    _captain_history.insert(0, sailor_id)
+
+
+# Seed history with the initial Sailor ID
+_record_captain(notes2.get_current_user_id())
+
+
+# ── Captain: get/set Sailor ID ────────────────────
+@app.route("/api/captain", methods=["GET"])
+def get_captain():
+    """Return the active Sailor ID."""
+    return jsonify({"sailor_id": notes2.get_current_user_id()})
+
+
+@app.route("/api/captain/history", methods=["GET"])
+def get_captain_history():
+    """Return the list of previously used Sailor IDs."""
+    return jsonify({"history": _captain_history})
+
+
+# ── Promote: change the active Sailor ID ──────────
+@app.route("/api/captain", methods=["PUT"])
+def promote_captain():
+    """Change the active Sailor ID for this session."""
+    data = request.get_json()
+    if not data or "sailor_id" not in data:
+        abort(400, description="Request must include 'sailor_id'")
+
+    new_id = data["sailor_id"].strip()
+    if not new_id:
+        abort(400, description="Sailor ID cannot be empty")
+
+    _record_captain(new_id)
+    notes2.set_current_user_id(new_id)
+    return jsonify({"message": f"Sailor ID set to '{new_id}'", "sailor_id": new_id})
+
+
+# ── Mutiny / Wash: remove Sailor ID from a note ───
+@app.route("/api/notes/<note_id>/wash", methods=["POST"])
+def wash_note(note_id):
+    """Remove the Sailor ID footer from a single note."""
+    note_file = notes2.find_note_file(NOTES_DIR, note_id)
+    if note_file is None:
+        abort(404, description=f"Note '{note_id}' not found")
+
+    content = note_file.read_text()
+    new_content = re.sub(notes2.get_user_footer_strip_regex(), '', content)
+    if new_content == content:
+        return jsonify({"message": "No captain mark to wash away", "changed": False})
+
+    note_file.write_text(new_content)
+    return jsonify({"message": "Captain mark washed", "changed": True})
+
+
 # ── Heartbeat: shut down when the browser tab is closed ──────
 _last_heartbeat = time.time()
-_HEARTBEAT_TIMEOUT = 6  # seconds without a heartbeat before shutdown
+_HEARTBEAT_TIMEOUT = 6
 
 
 @app.route("/api/heartbeat", methods=["POST"])
@@ -145,8 +229,6 @@ def _heartbeat_watcher():
 
 
 if __name__ == "__main__":
-    # With debug=True, Flask spawns two processes. Only start the heartbeat
-    # watcher and browser in the child (the one actually serving requests).
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         watcher = threading.Thread(target=_heartbeat_watcher, daemon=True)
         watcher.start()
