@@ -12,12 +12,14 @@ APP_VERSION = "1.5"
 STARTUP_DIVIDER_WIDTH = 40
 LIST_DIVIDER_WIDTH = 60
 
-ROOT_NOTES_DIR_NAME = ".notes"
-NESTED_NOTES_DIR_NAME = "notes"
-NOTE_EXTENSIONS = (".md", ".note", ".txt")
-PRIMARY_NOTE_EXTENSION = ".md"
+ROOT_NOTES_DIR_NAME = notes_core.ROOT_NOTES_DIR_NAME
+NESTED_NOTES_DIR_NAME = notes_core.NESTED_NOTES_DIR_NAME
+NOTE_EXTENSIONS = notes_core.NOTE_EXTENSIONS
+PRIMARY_NOTE_EXTENSION = notes_core.PRIMARY_NOTE_EXTENSION
 
-USER_ID_FOOTER_LABEL = "Sailor ID"
+USER_ID_FOOTER_LABEL = notes_core.USER_ID_FOOTER_LABEL
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+DEFAULT_EDITOR = "nano"
 PROMPT_LABEL = "current> "
 READ_TITLE_PROMPT = "Name the bottled message to read among the waves: "
 WASH_TITLE_PROMPT = "Name the bottled message to wash the captain mark from: "
@@ -119,7 +121,7 @@ def get_user_footer_capture_regex():
 
 def open_note_in_editor(note_file):
     """Open the note file in the system's default editor."""
-    editor = os.getenv("EDITOR", "nano")
+    editor = os.getenv("EDITOR", DEFAULT_EDITOR)
     subprocess.run([editor, str(note_file)])
 
 
@@ -535,7 +537,7 @@ def generate_auto_tags(title, content, existing_tags=None, max_tags=5):
 
 def build_frontmatter(title, tags=None, creator=None):
     """Build a YAML frontmatter string for a new note."""
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(timezone.utc).strftime(DATETIME_FORMAT)
     tag_list = format_tags(tags) if isinstance(tags, list) else (tags if tags else "[]")
     creator = creator or get_current_user_id()
     return (
@@ -547,7 +549,7 @@ def build_frontmatter(title, tags=None, creator=None):
 
 def update_modified_timestamp(content):
     """Update the modified timestamp in YAML frontmatter to now."""
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(timezone.utc).strftime(DATETIME_FORMAT)
     return re.sub(r'modified: .+', f'modified: {now}', content)
 
 
@@ -569,7 +571,7 @@ def update_yaml_field(content, key, value):
 
 def touch_note_access(content, user_id=None):
     """Update last_opened and last_accessed_by in YAML frontmatter."""
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(timezone.utc).strftime(DATETIME_FORMAT)
     user_id = user_id or get_current_user_id()
     content = update_yaml_field(content, "last_opened", now)
     content = update_yaml_field(content, "last_accessed_by", user_id)

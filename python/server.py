@@ -14,6 +14,12 @@ import uuid
 import webbrowser
 import notes2
 
+SERVER_PORT = 5001
+SERVER_HOST_URL = f"http://localhost:{SERVER_PORT}"
+HEARTBEAT_TIMEOUT = 6
+HEARTBEAT_CHECK_INTERVAL = 2
+BROWSER_OPEN_DELAY = 1.0
+
 # Root notes directory
 _ROOT_DIR = Path.home() / notes2.ROOT_NOTES_DIR_NAME
 
@@ -109,7 +115,7 @@ def register():
 
     users[username] = {
         "password_hash": generate_password_hash(password),
-        "created": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        "created": time.strftime(notes2.DATETIME_FORMAT, time.gmtime())
     }
     _save_users(users)
 
@@ -321,7 +327,7 @@ def update_tags(note_id):
     content = notes2.update_yaml_field(content, "tags", formatted)
     content = notes2.update_yaml_field(
         content, "modified",
-        __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime(notes2.DATETIME_FORMAT)
     )
     note_file.write_text(content)
 
@@ -433,7 +439,7 @@ def wash_note(note_id):
 
 # ── Heartbeat: shut down when the browser tab is closed ──────
 _last_heartbeat = time.time()
-_HEARTBEAT_TIMEOUT = 6
+_HEARTBEAT_TIMEOUT = HEARTBEAT_TIMEOUT
 
 
 # ── Serve attachments ─────────────────────────────
@@ -589,7 +595,7 @@ def heartbeat():
 def _heartbeat_watcher():
     """Background thread that shuts down the server when heartbeats stop."""
     while True:
-        time.sleep(2)
+        time.sleep(HEARTBEAT_CHECK_INTERVAL)
         if time.time() - _last_heartbeat > _HEARTBEAT_TIMEOUT:
             print("\nNo heartbeat — browser tab closed. Shutting down.")
             os.kill(os.getpid(), signal.SIGTERM)
@@ -600,5 +606,5 @@ if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         watcher = threading.Thread(target=_heartbeat_watcher, daemon=True)
         watcher.start()
-        threading.Timer(1.0, lambda: webbrowser.open("http://localhost:5001")).start()
-    app.run(debug=True, port=5001)
+        threading.Timer(BROWSER_OPEN_DELAY, lambda: webbrowser.open(SERVER_HOST_URL)).start()
+    app.run(debug=True, port=SERVER_PORT)
