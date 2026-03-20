@@ -290,6 +290,16 @@
       font-size: 0.72rem;
       color: var(--text-muted);
     }
+    .note-meta-detail {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem 1.5rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .note-meta-detail span { white-space: nowrap; }
+    .note-meta-detail .meta-label { color: var(--gold); font-weight: 600; }
     .note-actions {
       display: flex;
       gap: 0.5rem;
@@ -652,7 +662,7 @@
         const created = formatDate(note.created);
         const tags = parseTags(note.tags);
         const status = note.status || "";
-        const author = note.author || "";
+        const creator = note.creator || note.author || "";
         const statusClass = status === "complete" ? "status-complete"
                           : status === "draft" ? "status-draft" : "status-default";
         const fileId = (note.file || "").replace(/\.[^.]+$/, "");
@@ -668,9 +678,15 @@
             </div>
             ${tags.length ? `<div class="note-tags">${tags.map(t => `<span class="tag">${escH(t)}</span>`).join("")}</div>` : ""}
             <div class="note-body" id="body-${i}">
+              <div class="note-meta-detail" id="meta-${i}">
+                <span><span class="meta-label">Creator:</span> ${escH(creator) || '—'}</span>
+                <span><span class="meta-label">Created:</span> ${escH(created) || '—'}</span>
+                <span><span class="meta-label">Last Opened:</span> <span class="meta-last-opened">—</span></span>
+                <span><span class="meta-label">Last Accessed By:</span> <span class="meta-last-accessed">—</span></span>
+              </div>
               <div class="note-content">Loading…</div>
               <div class="note-footer">
-                <span class="note-author">${author ? "Sailor: " + escH(author) : ""}</span>
+                <span class="note-author">${creator ? "Sailor: " + escH(creator) : ""}</span>
                 <div class="note-actions">
                   <button class="cmd-btn" onclick="event.stopPropagation(); openReshapeModal('${esc(fileId)}')">
                     ⛵ Reshape <span class="cmd-alias">(edit)</span>
@@ -701,6 +717,14 @@
         if (!res.ok) throw new Error();
         const data = await res.json();
         card.querySelector(".note-content").textContent = data.content || "(empty)";
+        // Populate metadata detail row
+        const meta = card.querySelector(".note-meta-detail");
+        if (meta) {
+          const lo = meta.querySelector(".meta-last-opened");
+          const la = meta.querySelector(".meta-last-accessed");
+          if (lo) lo.textContent = data.last_opened ? formatDate(data.last_opened) : '—';
+          if (la) la.textContent = data.last_accessed_by || '—';
+        }
       } catch {
         card.querySelector(".note-content").textContent = "⚠ Could not load note content.";
       }

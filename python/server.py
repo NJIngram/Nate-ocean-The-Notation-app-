@@ -27,6 +27,9 @@ def list_notes():
     notes = []
     for f in sorted(note_files):
         metadata = notes2.parse_yaml_header(f)
+        # Backfill creator from author if missing
+        if "creator" not in metadata and "author" in metadata:
+            metadata["creator"] = metadata["author"]
         notes.append(metadata)
     return jsonify(notes)
 
@@ -40,9 +43,20 @@ def get_note(note_id):
         abort(404, description=f"Note '{note_id}' not found")
 
     content = note_file.read_text()
+    # Backfill creator from author if missing
+    metadata_pre = notes2.parse_yaml_header(note_file)
+    if "creator" not in metadata_pre and "author" in metadata_pre:
+        content = notes2.update_yaml_field(content, "creator", metadata_pre["author"])
+    # Track who opened the note and when
+    content = notes2.touch_note_access(content)
+    note_file.write_text(content)
+
     metadata = notes2.parse_yaml_header(note_file)
     frontmatter, body = notes2.split_frontmatter(content)
     metadata["content"] = body
+    # Also expose creator from author for frontend
+    if "creator" not in metadata and "author" in metadata:
+        metadata["creator"] = metadata["author"]
     return jsonify(metadata)
 
 
@@ -57,8 +71,8 @@ def create_note():
     title = data["title"]
     content = data["content"]
 
-    frontmatter = notes2.build_frontmatter(title)
     user_id = data.get("author", notes2.get_current_user_id())
+    frontmatter = notes2.build_frontmatter(title, creator=user_id)
     labeled = f"{frontmatter}{content}{notes2.build_user_footer(user_id)}"
 
     target_dir = notes2.get_target_notes_dir(NOTES_DIR)
@@ -89,6 +103,8 @@ def update_note(note_id):
 
     user_id = data.get("author", notes2.get_current_user_id())
     new_content = f"{frontmatter}{data['content']}{notes2.build_user_footer(user_id)}"
+    # Track who edited the note and when
+    new_content = notes2.touch_note_access(new_content, user_id)
     note_file.write_text(new_content)
 
     return jsonify({"message": "Note updated", "file": note_file.name})
