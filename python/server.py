@@ -127,11 +127,32 @@ def search_notes():
     return jsonify({"query": query, "count": len(results), "results": results})
 
 
+# ── Captain history ────────────────────────────────
+_captain_history: list[str] = []
+
+
+def _record_captain(sailor_id: str):
+    """Add a Sailor ID to the history (no duplicates, most recent first)."""
+    if sailor_id in _captain_history:
+        _captain_history.remove(sailor_id)
+    _captain_history.insert(0, sailor_id)
+
+
+# Seed history with the initial Sailor ID
+_record_captain(notes2.get_current_user_id())
+
+
 # ── Captain: get/set Sailor ID ────────────────────
 @app.route("/api/captain", methods=["GET"])
 def get_captain():
     """Return the active Sailor ID."""
     return jsonify({"sailor_id": notes2.get_current_user_id()})
+
+
+@app.route("/api/captain/history", methods=["GET"])
+def get_captain_history():
+    """Return the list of previously used Sailor IDs."""
+    return jsonify({"history": _captain_history})
 
 
 # ── Promote: change the active Sailor ID ──────────
@@ -146,6 +167,7 @@ def promote_captain():
     if not new_id:
         abort(400, description="Sailor ID cannot be empty")
 
+    _record_captain(new_id)
     notes2.set_current_user_id(new_id)
     return jsonify({"message": f"Sailor ID set to '{new_id}'", "sailor_id": new_id})
 

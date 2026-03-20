@@ -590,6 +590,7 @@
       <h2>🏴‍☠️ Promote a New Captain</h2>
       <label for="promote-id">New Sailor ID</label>
       <input type="text" id="promote-id" placeholder="Enter new Sailor ID" />
+      <div id="captain-history" style="margin-top:0.75rem;"></div>
       <div class="modal-actions">
         <button class="cmd-btn" onclick="closeModal('promote-modal')">Cancel</button>
         <button class="cmd-btn gold" onclick="submitPromote()">Promote</button>
@@ -838,9 +839,28 @@
     }
 
     // ── Promote: change Sailor ID ─────────────────
-    function openPromoteModal() {
+    async function openPromoteModal() {
       document.getElementById("promote-id").value = "";
       document.getElementById("promote-modal").classList.add("active");
+      // Load captain history
+      try {
+        const res = await fetch(`${API}/api/captain/history`);
+        const data = await res.json();
+        const container = document.getElementById("captain-history");
+        if (data.history && data.history.length > 0) {
+          container.innerHTML = `
+            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.35rem;">Previous Sailors</div>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              ${data.history.map(id => `<button class="cmd-btn" style="padding:0.3rem 0.7rem;font-size:0.75rem;" onclick="selectCaptain('${escH(id)}')">${escH(id)}</button>`).join("")}
+            </div>`;
+        } else {
+          container.innerHTML = "";
+        }
+      } catch { /* ignore */ }
+    }
+
+    function selectCaptain(id) {
+      document.getElementById("promote-id").value = id;
     }
 
     async function submitPromote() {
