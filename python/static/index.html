@@ -60,7 +60,9 @@
       letter-spacing: 0.02em;
       position: relative;
     }
-    header h1 span { color: var(--gold); }
+    header h1 span {
+      color: var(--gold);
+    }
     header p {
       font-size: 0.85rem;
       color: var(--text-muted);
@@ -77,7 +79,9 @@
       margin-top: 1.25rem;
       position: relative;
     }
-    .stat { text-align: center; }
+    .stat {
+      text-align: center;
+    }
     .stat-value {
       font-family: 'Playfair Display', serif;
       font-size: 1.5rem;
@@ -91,75 +95,20 @@
       letter-spacing: 0.12em;
       margin-top: 0.15rem;
     }
-    #captain-display {
-      margin-top: 0.8rem;
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      position: relative;
-    }
-    #captain-display strong { color: var(--gold); }
 
-    /* ── Command Bar ───────────────────────────── */
-    .command-bar {
+    /* ── Toolbar ───────────────────────────────── */
+    .toolbar {
       max-width: 960px;
       margin: 1.5rem auto 0;
       padding: 0 1.5rem;
-    }
-    .command-bar-label {
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-muted);
-      margin-bottom: 0.5rem;
-    }
-    .command-row {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
     }
-    .cmd-btn {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: var(--bg-card);
-      color: var(--text-secondary);
-      font-family: inherit;
-      font-size: 0.78rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: 0.02em;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .cmd-btn:hover { border-color: var(--accent); color: var(--text-primary); background: var(--bg-card-hover); }
-    .cmd-btn .cmd-icon { font-size: 0.9rem; }
-    .cmd-btn .cmd-alias {
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      margin-left: 0.2rem;
-    }
-    .cmd-btn.primary {
-      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
-      border-color: var(--accent);
-      color: #fff;
-    }
-    .cmd-btn.primary:hover { opacity: 0.9; }
-    .cmd-btn.gold { border-color: var(--gold-muted); color: var(--gold); }
-    .cmd-btn.gold:hover { border-color: var(--gold); background: rgba(212,168,83,0.1); }
-    .cmd-btn.danger { color: var(--danger); }
-    .cmd-btn.danger:hover { border-color: var(--danger); background: rgba(204,68,68,0.08); }
-
-    /* ── Search bar ────────────────────────────── */
-    .toolbar {
-      max-width: 960px;
-      margin: 1rem auto 0;
-      padding: 0 1.5rem;
-    }
     .search-box {
+      flex: 1;
+      min-width: 200px;
       position: relative;
-      width: 100%;
     }
     .search-box input {
       width: 100%;
@@ -184,6 +133,28 @@
       font-size: 0.85rem;
       pointer-events: none;
     }
+    .btn {
+      padding: 0.65rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+    .btn:hover { border-color: var(--accent); color: var(--text-primary); background: var(--bg-card-hover); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; background: var(--accent); }
+    .btn-danger { color: var(--danger); }
+    .btn-danger:hover { border-color: var(--danger); }
 
     /* ── Notes Grid ────────────────────────────── */
     .notes-container {
@@ -211,6 +182,7 @@
     }
     .note-card:hover { background: var(--bg-card); }
     .note-card.expanded { background: var(--bg-card); }
+
     .note-header {
       display: flex;
       align-items: flex-start;
@@ -247,6 +219,7 @@
     .status-complete { background: rgba(51,170,136,0.15); color: var(--success); }
     .status-draft    { background: rgba(212,168,83,0.15);  color: var(--gold); }
     .status-default  { background: rgba(143,163,191,0.1);  color: var(--text-muted); }
+
     .note-tags {
       display: flex;
       gap: 0.4rem;
@@ -262,6 +235,7 @@
       font-weight: 500;
       letter-spacing: 0.02em;
     }
+
     .note-body {
       display: none;
       margin-top: 1.25rem;
@@ -270,12 +244,22 @@
     }
     .note-card.expanded .note-body { display: block; }
     .note-content {
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       line-height: 1.75;
       color: var(--text-secondary);
       white-space: pre-wrap;
       font-family: 'JetBrains Mono', 'Menlo', monospace;
+      font-size: 0.8rem;
     }
+    .note-content h1, .note-content h2, .note-content h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--text-primary);
+      margin: 1rem 0 0.5rem;
+    }
+    .note-content h1 { font-size: 1.2rem; }
+    .note-content h2 { font-size: 1rem; }
+    .note-content h3 { font-size: 0.9rem; }
+
     .note-footer {
       display: flex;
       justify-content: space-between;
@@ -283,47 +267,16 @@
       margin-top: 1rem;
       padding-top: 0.75rem;
       border-top: 1px solid var(--border);
-      flex-wrap: wrap;
-      gap: 0.5rem;
     }
     .note-author {
       font-size: 0.72rem;
       color: var(--text-muted);
     }
-    .note-meta-detail {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.35rem 1.5rem;
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-bottom: 0.75rem;
-    }
-    .note-meta-detail span { white-space: nowrap; }
-    .note-meta-detail .meta-label { color: var(--gold); font-weight: 600; }
     .note-actions {
       display: flex;
       gap: 0.5rem;
     }
-    .note-actions .cmd-btn { padding: 0.35rem 0.75rem; font-size: 0.7rem; }
-
-    /* ── Toast ─────────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      padding: 0.75rem 1.25rem;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: #fff;
-      background: var(--accent);
-      opacity: 0;
-      transform: translateY(10px);
-      transition: all 0.3s;
-      z-index: 200;
-      pointer-events: none;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.error { background: var(--danger); }
+    .note-actions .btn { padding: 0.35rem 0.75rem; font-size: 0.72rem; }
 
     /* ── Empty state ───────────────────────────── */
     .empty-state {
@@ -398,56 +351,10 @@
       margin-top: 1.5rem;
     }
 
-    /* ── Help panel ────────────────────────────── */
-    .help-panel {
-      display: none;
-      max-width: 960px;
-      margin: 1rem auto;
-      padding: 0 1.5rem;
-    }
-    .help-panel.active { display: block; }
-    .help-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-    }
-    .help-card h3 {
-      font-family: 'Playfair Display', serif;
-      color: var(--gold);
-      margin-bottom: 1rem;
-    }
-    .help-card table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-    .help-card th {
-      text-align: left;
-      color: var(--text-muted);
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 0.4rem 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .help-card td {
-      padding: 0.5rem 0.5rem;
-      border-bottom: 1px solid rgba(36,53,85,0.4);
-      color: var(--text-secondary);
-    }
-    .help-card td:first-child {
-      color: var(--accent);
-      font-weight: 600;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem;
-    }
-
     /* ── Responsive ────────────────────────────── */
     @media (max-width: 600px) {
       header h1 { font-size: 1.5rem; }
-      .command-row { gap: 0.35rem; }
-      .cmd-btn { padding: 0.4rem 0.7rem; font-size: 0.72rem; }
+      .toolbar { flex-direction: column; }
       .note-header { flex-direction: column; gap: 0.4rem; }
       .note-meta { order: -1; }
     }
@@ -468,75 +375,17 @@
         <div class="stat-label">Currents</div>
       </div>
     </div>
-    <div id="captain-display">Captain's mark: <strong id="sailor-id">…</strong></div>
   </header>
 
-  <!-- ── Command Bar ──────────────────────────── -->
-  <div class="command-bar">
-    <div class="command-bar-label">Tide Commands</div>
-    <div class="command-row">
-      <button class="cmd-btn primary" onclick="openCastModal()">
-        <span class="cmd-icon">🌊</span> Cast <span class="cmd-alias">(new)</span>
-      </button>
-      <button class="cmd-btn primary" onclick="openBottleModal()">
-        <span class="cmd-icon">🍾</span> Bottle <span class="cmd-alias">(save)</span>
-      </button>
-      <button class="cmd-btn" onclick="loadNotes()">
-        <span class="cmd-icon">🌀</span> Tides <span class="cmd-alias">(list)</span>
-      </button>
-      <button class="cmd-btn" onclick="focusSearch()">
-        <span class="cmd-icon">🔭</span> Scan <span class="cmd-alias">(search)</span>
-      </button>
-      <button class="cmd-btn gold" onclick="showCaptain()">
-        <span class="cmd-icon">⚓</span> Captain <span class="cmd-alias">(user-id)</span>
-      </button>
-      <button class="cmd-btn gold" onclick="openPromoteModal()">
-        <span class="cmd-icon">🏴‍☠️</span> Promote <span class="cmd-alias">(change-id)</span>
-      </button>
-      <button class="cmd-btn" onclick="toggleHelp()">
-        <span class="cmd-icon">🗺️</span> Chart <span class="cmd-alias">(help)</span>
-      </button>
-      <button class="cmd-btn danger" onclick="dockServer()">
-        <span class="cmd-icon">🚢</span> Dock <span class="cmd-alias">(quit)</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- ── Help Panel ───────────────────────────── -->
-  <div class="help-panel" id="help-panel">
-    <div class="help-card">
-      <h3>🗺️ Navigation Chart</h3>
-      <table>
-        <thead>
-          <tr><th>Command</th><th>Alias</th><th>Description</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>cast</td><td>new, n</td><td>Cast a new thought into the sea</td></tr>
-          <tr><td>bottle</td><td>save, s</td><td>Bottle a message with title &amp; content</td></tr>
-          <tr><td>sound</td><td>read, r</td><td>Read a bottled message among the waves</td></tr>
-          <tr><td>reshape</td><td>edit, e</td><td>Rewrite a bottled message from bow to stern</td></tr>
-          <tr><td>sink</td><td>delete, d</td><td>Send a bottled message below</td></tr>
-          <tr><td>tides</td><td>list, l</td><td>List every wave in your harbor</td></tr>
-          <tr><td>scan</td><td>search, f</td><td>Search the waves for a word or phrase</td></tr>
-          <tr><td>captain</td><td>user-id, u</td><td>Reveal the active Sailor ID</td></tr>
-          <tr><td>mutiny</td><td>wash, w</td><td>Wash Sailor ID mark from a bottled message</td></tr>
-          <tr><td>promote</td><td>change-id, c</td><td>Promote a new Sailor ID for this session</td></tr>
-          <tr><td>chart</td><td>help, h</td><td>Unfurl this navigation chart</td></tr>
-          <tr><td>dock</td><td>quit, q</td><td>Return to shore (shut down the server)</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── Search Bar ───────────────────────────── -->
   <div class="toolbar">
     <div class="search-box">
       <span class="icon">⌕</span>
-      <input type="text" id="search-input" placeholder="Scan the waves…" />
+      <input type="text" id="search-input" placeholder="Search the waves…" />
     </div>
+    <button class="btn btn-primary" onclick="openCreateModal()">＋ Cast New Note</button>
+    <button class="btn" onclick="loadNotes()">↻ Refresh</button>
   </div>
 
-  <!-- ── Notes List ───────────────────────────── -->
   <div class="notes-container">
     <div id="notes-grid" class="notes-grid">
       <div class="empty-state">
@@ -546,64 +395,19 @@
     </div>
   </div>
 
-  <!-- ── Toast ────────────────────────────────── -->
-  <div class="toast" id="toast"></div>
-
-  <!-- ── Cast Modal (new note with frontmatter) ─ -->
-  <div class="modal-overlay" id="cast-modal">
+  <!-- Create / Edit Modal -->
+  <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
-      <h2>🌊 Cast a New Thought</h2>
-      <label for="cast-title">Title</label>
-      <input type="text" id="cast-title" placeholder="Name this bottled message" />
-      <label for="cast-content">Content</label>
-      <textarea id="cast-content" placeholder="Release your thoughts into the tide…"></textarea>
+      <h2 id="modal-title">Cast a New Thought</h2>
+      <label for="input-title">Title</label>
+      <input type="text" id="input-title" placeholder="Name this bottled message" />
+      <label for="input-author">Author</label>
+      <input type="text" id="input-author" placeholder="Your Sailor ID" />
+      <label for="input-content">Content</label>
+      <textarea id="input-content" placeholder="Write your thoughts…"></textarea>
       <div class="modal-actions">
-        <button class="cmd-btn" onclick="closeModal('cast-modal')">Cancel</button>
-        <button class="cmd-btn primary" onclick="submitCast()">Cast Into the Sea</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Bottle Modal (save with title & content) ─ -->
-  <div class="modal-overlay" id="bottle-modal">
-    <div class="modal">
-      <h2>🍾 Bottle a Message</h2>
-      <label for="bottle-title">Title</label>
-      <input type="text" id="bottle-title" placeholder="Name this bottled message among the waves" />
-      <label for="bottle-content">Content</label>
-      <textarea id="bottle-content" placeholder="You released a bottled message into the tide…"></textarea>
-      <div class="modal-actions">
-        <button class="cmd-btn" onclick="closeModal('bottle-modal')">Cancel</button>
-        <button class="cmd-btn primary" onclick="submitBottle()">Bottle It</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Reshape Modal (edit a note) ────────── -->
-  <div class="modal-overlay" id="reshape-modal">
-    <div class="modal">
-      <h2>⛵ Reshape a Bottled Message</h2>
-      <label>Title</label>
-      <input type="text" id="reshape-title" disabled />
-      <label for="reshape-content">New Content</label>
-      <textarea id="reshape-content" placeholder="Enter replacement tide text…"></textarea>
-      <div class="modal-actions">
-        <button class="cmd-btn" onclick="closeModal('reshape-modal')">Cancel</button>
-        <button class="cmd-btn primary" onclick="submitReshape()">Reshape</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Promote Modal (change Sailor ID) ───── -->
-  <div class="modal-overlay" id="promote-modal">
-    <div class="modal">
-      <h2>🏴‍☠️ Promote a New Captain</h2>
-      <label for="promote-id">New Sailor ID</label>
-      <input type="text" id="promote-id" placeholder="Enter new Sailor ID" />
-      <div id="captain-history" style="margin-top:0.75rem;"></div>
-      <div class="modal-actions">
-        <button class="cmd-btn" onclick="closeModal('promote-modal')">Cancel</button>
-        <button class="cmd-btn gold" onclick="submitPromote()">Promote</button>
+        <button class="btn" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="modal-submit" onclick="submitNote()">Cast Into the Sea</button>
       </div>
     </div>
   </div>
@@ -611,32 +415,16 @@
   <script>
     const API = "";
     let allNotes = [];
+    let editingNoteId = null;
 
-    // ── Toast notifications ───────────────────────
-    function toast(msg, isError) {
-      const el = document.getElementById("toast");
-      el.textContent = msg;
-      el.className = isError ? "toast error show" : "toast show";
-      setTimeout(() => { el.className = "toast"; }, 3000);
-    }
-
-    // ── Load Captain ID ───────────────────────────
-    async function loadCaptain() {
-      try {
-        const res = await fetch(`${API}/api/captain`);
-        const data = await res.json();
-        document.getElementById("sailor-id").textContent = data.sailor_id;
-      } catch { /* ignore */ }
-    }
-
-    // ── Tides: load notes ─────────────────────────
+    // ── Load notes ───────────────────────────────
     async function loadNotes() {
       try {
         const res = await fetch(`${API}/api/notes`);
         allNotes = await res.json();
         renderNotes(allNotes);
         updateStats(allNotes);
-      } catch {
+      } catch (err) {
         document.getElementById("notes-grid").innerHTML = `
           <div class="empty-state">
             <div class="icon">⚠</div>
@@ -645,9 +433,10 @@
       }
     }
 
-    // ── Render notes list ─────────────────────────
+    // ── Render notes list ────────────────────────
     function renderNotes(notes) {
       const grid = document.getElementById("notes-grid");
+
       if (notes.length === 0) {
         grid.innerHTML = `
           <div class="empty-state">
@@ -662,41 +451,28 @@
         const created = formatDate(note.created);
         const tags = parseTags(note.tags);
         const status = note.status || "";
-        const creator = note.creator || note.author || "";
+        const author = note.author || "";
         const statusClass = status === "complete" ? "status-complete"
-                          : status === "draft" ? "status-draft" : "status-default";
+                          : status === "draft" ? "status-draft"
+                          : "status-default";
         const fileId = (note.file || "").replace(/\.[^.]+$/, "");
 
         return `
           <div class="note-card" id="card-${i}">
-            <div class="note-header" onclick="toggleNote(${i}, '${esc(fileId)}')">
-              <div class="note-title">${escH(title)}</div>
+            <div class="note-header" onclick="toggleNote(${i}, '${escapeAttr(fileId)}')">
+              <div class="note-title">${escapeHtml(title)}</div>
               <div class="note-meta">
-                ${status ? `<span class="note-status ${statusClass}">${escH(status)}</span>` : ""}
-                <span class="note-date">${escH(created)}</span>
+                ${status ? `<span class="note-status ${statusClass}">${escapeHtml(status)}</span>` : ""}
+                <span class="note-date">${escapeHtml(created)}</span>
               </div>
             </div>
-            ${tags.length ? `<div class="note-tags">${tags.map(t => `<span class="tag">${escH(t)}</span>`).join("")}</div>` : ""}
+            ${tags.length ? `<div class="note-tags">${tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>` : ""}
             <div class="note-body" id="body-${i}">
-              <div class="note-meta-detail" id="meta-${i}">
-                <span><span class="meta-label">Creator:</span> ${escH(creator) || '—'}</span>
-                <span><span class="meta-label">Created:</span> ${escH(created) || '—'}</span>
-                <span><span class="meta-label">Last Opened:</span> <span class="meta-last-opened">—</span></span>
-                <span><span class="meta-label">Last Accessed By:</span> <span class="meta-last-accessed">—</span></span>
-              </div>
               <div class="note-content">Loading…</div>
               <div class="note-footer">
-                <span class="note-author">${creator ? "Sailor: " + escH(creator) : ""}</span>
+                <span class="note-author">${author ? "Sailor: " + escapeHtml(author) : ""}</span>
                 <div class="note-actions">
-                  <button class="cmd-btn" onclick="event.stopPropagation(); openReshapeModal('${esc(fileId)}')">
-                    ⛵ Reshape <span class="cmd-alias">(edit)</span>
-                  </button>
-                  <button class="cmd-btn gold" onclick="event.stopPropagation(); washNote('${esc(fileId)}')">
-                    🧹 Mutiny <span class="cmd-alias">(wash)</span>
-                  </button>
-                  <button class="cmd-btn danger" onclick="event.stopPropagation(); sinkNote('${esc(fileId)}')">
-                    🗑 Sink <span class="cmd-alias">(delete)</span>
-                  </button>
+                  <button class="btn btn-danger" onclick="event.stopPropagation(); deleteNote('${escapeAttr(fileId)}')">Delete</button>
                 </div>
               </div>
             </div>
@@ -704,34 +480,32 @@
       }).join("");
     }
 
-    // ── Sound: expand / read a note ───────────────
+    // ── Toggle expand note ───────────────────────
     async function toggleNote(index, fileId) {
       const card = document.getElementById(`card-${index}`);
       if (card.classList.contains("expanded")) {
         card.classList.remove("expanded");
         return;
       }
+
+      // Collapse others
       document.querySelectorAll(".note-card.expanded").forEach(c => c.classList.remove("expanded"));
+
+      // Fetch full note content
       try {
         const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`);
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error("Not found");
         const data = await res.json();
-        card.querySelector(".note-content").textContent = data.content || "(empty)";
-        // Populate metadata detail row
-        const meta = card.querySelector(".note-meta-detail");
-        if (meta) {
-          const lo = meta.querySelector(".meta-last-opened");
-          const la = meta.querySelector(".meta-last-accessed");
-          if (lo) lo.textContent = data.last_opened ? formatDate(data.last_opened) : '—';
-          if (la) la.textContent = data.last_accessed_by || '—';
-        }
+        const contentDiv = card.querySelector(".note-content");
+        contentDiv.textContent = data.content || "(empty)";
       } catch {
         card.querySelector(".note-content").textContent = "⚠ Could not load note content.";
       }
+
       card.classList.add("expanded");
     }
 
-    // ── Scan: search ──────────────────────────────
+    // ── Search ────────────────────────────────────
     let searchTimeout;
     document.getElementById("search-input").addEventListener("input", (e) => {
       clearTimeout(searchTimeout);
@@ -742,190 +516,76 @@
           const res = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
           const data = await res.json();
           renderNotes(data.results || []);
-        } catch { renderNotes([]); }
+        } catch {
+          renderNotes([]);
+        }
       }, 300);
     });
 
-    function focusSearch() {
-      document.getElementById("search-input").focus();
+    // ── Create / Edit ─────────────────────────────
+    function openCreateModal() {
+      editingNoteId = null;
+      document.getElementById("modal-title").textContent = "Cast a New Thought";
+      document.getElementById("modal-submit").textContent = "Cast Into the Sea";
+      document.getElementById("input-title").value = "";
+      document.getElementById("input-title").disabled = false;
+      document.getElementById("input-author").value = "";
+      document.getElementById("input-content").value = "";
+      document.getElementById("modal-overlay").classList.add("active");
     }
 
-    // ── Cast: create note (with frontmatter) ──────
-    function openCastModal() {
-      document.getElementById("cast-title").value = "";
-      document.getElementById("cast-content").value = "";
-      document.getElementById("cast-modal").classList.add("active");
+    function closeModal() {
+      document.getElementById("modal-overlay").classList.remove("active");
     }
 
-    async function submitCast() {
-      const title = document.getElementById("cast-title").value.trim();
-      const content = document.getElementById("cast-content").value;
-      if (!title || !content) { toast("Title and content are required.", true); return; }
+    async function submitNote() {
+      const title   = document.getElementById("input-title").value.trim();
+      const author  = document.getElementById("input-author").value.trim();
+      const content = document.getElementById("input-content").value;
+
+      if (!title || !content) { alert("Title and content are required."); return; }
+
+      const body = { title, content };
+      if (author) body.author = author;
+
       try {
-        const res = await fetch(`${API}/api/notes`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, content })
-        });
-        if (!res.ok) { toast("Failed to cast note.", true); return; }
-        closeModal("cast-modal");
-        toast(`Bottle '${title}' now drifts in your sea log.`);
+        let res;
+        if (editingNoteId) {
+          res = await fetch(`${API}/api/notes/${encodeURIComponent(editingNoteId)}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+        } else {
+          res = await fetch(`${API}/api/notes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+        }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err.description || "Something went wrong.");
+          return;
+        }
+        closeModal();
         loadNotes();
-      } catch { toast("Could not reach the server.", true); }
+      } catch {
+        alert("Could not reach the server.");
+      }
     }
 
-    // ── Bottle: save note (same as cast, alternate command) ──
-    function openBottleModal() {
-      document.getElementById("bottle-title").value = "";
-      document.getElementById("bottle-content").value = "";
-      document.getElementById("bottle-modal").classList.add("active");
-    }
-
-    async function submitBottle() {
-      const title = document.getElementById("bottle-title").value.trim();
-      const content = document.getElementById("bottle-content").value;
-      if (!title || !content) { toast("Title and content are required.", true); return; }
-      try {
-        const res = await fetch(`${API}/api/notes`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, content })
-        });
-        if (!res.ok) { toast("Failed to bottle message.", true); return; }
-        closeModal("bottle-modal");
-        toast(`Bottle '${title}' now drifts in your sea log.`);
-        loadNotes();
-      } catch { toast("Could not reach the server.", true); }
-    }
-
-    // ── Reshape: edit a note ──────────────────────
-    let reshapeFileId = null;
-    function openReshapeModal(fileId) {
-      reshapeFileId = fileId;
-      document.getElementById("reshape-title").value = fileId;
-      document.getElementById("reshape-content").value = "";
-      document.getElementById("reshape-modal").classList.add("active");
-      // Pre-load current content
-      fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`)
-        .then(r => r.json())
-        .then(data => { document.getElementById("reshape-content").value = data.content || ""; })
-        .catch(() => {});
-    }
-
-    async function submitReshape() {
-      const content = document.getElementById("reshape-content").value;
-      if (!content) { toast("Content cannot be empty.", true); return; }
-      try {
-        const res = await fetch(`${API}/api/notes/${encodeURIComponent(reshapeFileId)}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content })
-        });
-        if (!res.ok) { toast("Failed to reshape note.", true); return; }
-        closeModal("reshape-modal");
-        toast(`Bottled message '${reshapeFileId}' has been reshaped.`);
-        loadNotes();
-      } catch { toast("Could not reach the server.", true); }
-    }
-
-    // ── Sink: delete a note ───────────────────────
-    async function sinkNote(fileId) {
-      if (!confirm(`Sink "${fileId}" beneath the surface?`)) return;
+    // ── Delete ────────────────────────────────────
+    async function deleteNote(fileId) {
+      if (!confirm(`Delete "${fileId}"?`)) return;
       try {
         const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`, { method: "DELETE" });
-        if (!res.ok) { toast("Failed to sink note.", true); return; }
-        toast(`Bottled message '${fileId}' slipped beneath the surface.`);
+        if (!res.ok) { alert("Failed to delete."); return; }
         loadNotes();
-      } catch { toast("Could not reach the server.", true); }
+      } catch {
+        alert("Could not reach the server.");
+      }
     }
-
-    // ── Mutiny / Wash: remove Sailor ID ───────────
-    async function washNote(fileId) {
-      if (!confirm(`Wash the captain's mark from "${fileId}"?`)) return;
-      try {
-        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}/wash`, { method: "POST" });
-        if (!res.ok) { toast("Failed to wash note.", true); return; }
-        const data = await res.json();
-        toast(data.changed
-          ? `Captain mark washed from '${fileId}'.`
-          : `'${fileId}' has no captain mark to wash away.`);
-        loadNotes();
-      } catch { toast("Could not reach the server.", true); }
-    }
-
-    // ── Captain: show Sailor ID ───────────────────
-    async function showCaptain() {
-      try {
-        const res = await fetch(`${API}/api/captain`);
-        const data = await res.json();
-        toast(`The captain's mark is: ${data.sailor_id}`);
-      } catch { toast("Could not reach the server.", true); }
-    }
-
-    // ── Promote: change Sailor ID ─────────────────
-    async function openPromoteModal() {
-      document.getElementById("promote-id").value = "";
-      document.getElementById("promote-modal").classList.add("active");
-      // Load captain history
-      try {
-        const res = await fetch(`${API}/api/captain/history`);
-        const data = await res.json();
-        const container = document.getElementById("captain-history");
-        if (data.history && data.history.length > 0) {
-          container.innerHTML = `
-            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.35rem;">Previous Sailors</div>
-            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-              ${data.history.map(id => `<button class="cmd-btn" style="padding:0.3rem 0.7rem;font-size:0.75rem;" onclick="selectCaptain('${escH(id)}')">${escH(id)}</button>`).join("")}
-            </div>`;
-        } else {
-          container.innerHTML = "";
-        }
-      } catch { /* ignore */ }
-    }
-
-    function selectCaptain(id) {
-      document.getElementById("promote-id").value = id;
-    }
-
-    async function submitPromote() {
-      const newId = document.getElementById("promote-id").value.trim();
-      if (!newId) { toast("Sailor ID cannot be empty.", true); return; }
-      try {
-        const res = await fetch(`${API}/api/captain`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sailor_id: newId })
-        });
-        if (!res.ok) { toast("Failed to promote.", true); return; }
-        closeModal("promote-modal");
-        toast(`Active Sailor ID set to '${newId}'.`);
-        loadCaptain();
-      } catch { toast("Could not reach the server.", true); }
-    }
-
-    // ── Chart: toggle help panel ──────────────────
-    function toggleHelp() {
-      document.getElementById("help-panel").classList.toggle("active");
-    }
-
-    // ── Dock: shut down server ────────────────────
-    function dockServer() {
-      if (!confirm("Return to shore? This will shut down the server.")) return;
-      fetch(`${API}/api/heartbeat`, { method: "POST" }).catch(() => {});
-      // Stop heartbeats — server will auto-shutdown after timeout
-      clearInterval(heartbeatInterval);
-      toast("Fair winds. The server will dock shortly…");
-    }
-
-    // ── Modal helpers ─────────────────────────────
-    function closeModal(id) {
-      document.getElementById(id).classList.remove("active");
-    }
-    document.querySelectorAll(".modal-overlay").forEach(el => {
-      el.addEventListener("click", (e) => {
-        if (e.target === el) el.classList.remove("active");
-      });
-    });
 
     // ── Stats ─────────────────────────────────────
     function updateStats(notes) {
@@ -941,30 +601,38 @@
       if (Array.isArray(raw)) return raw;
       return raw.replace(/[\[\]]/g, "").split(",").map(t => t.trim()).filter(Boolean);
     }
+
     function formatDate(iso) {
       if (!iso) return "";
       try {
-        return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        const d = new Date(iso);
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
       } catch { return iso; }
     }
-    function escH(str) {
+
+    function escapeHtml(str) {
       const el = document.createElement("span");
       el.textContent = str;
       return el.innerHTML;
     }
-    function esc(str) {
+
+    function escapeAttr(str) {
       return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
     }
 
-    // ── Heartbeat ─────────────────────────────────
-    const heartbeatInterval = setInterval(() => {
+    // Close modal on overlay click
+    document.getElementById("modal-overlay").addEventListener("click", (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+    // ── Heartbeat: keeps server alive while tab is open ───
+    setInterval(() => {
       fetch("/api/heartbeat", { method: "POST" }).catch(() => {});
     }, 2000);
+    // send first heartbeat immediately
     fetch("/api/heartbeat", { method: "POST" }).catch(() => {});
 
     // ── Init ──────────────────────────────────────
     loadNotes();
-    loadCaptain();
   </script>
 </body>
 </html>
