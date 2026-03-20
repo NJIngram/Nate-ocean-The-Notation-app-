@@ -4,6 +4,7 @@ import os
 import signal
 import threading
 import time
+import webbrowser
 import notes2
 
 app = Flask(__name__, static_folder="static")
@@ -144,6 +145,10 @@ def _heartbeat_watcher():
 
 
 if __name__ == "__main__":
-    watcher = threading.Thread(target=_heartbeat_watcher, daemon=True)
-    watcher.start()
+    # With debug=True, Flask spawns two processes. Only start the heartbeat
+    # watcher and browser in the child (the one actually serving requests).
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        watcher = threading.Thread(target=_heartbeat_watcher, daemon=True)
+        watcher.start()
+        threading.Timer(1.0, lambda: webbrowser.open("http://localhost:5001")).start()
     app.run(debug=True, port=5001)
