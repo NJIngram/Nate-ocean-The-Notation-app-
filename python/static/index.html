@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nate Ocean — A Sea of Thoughts</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap');
+
+    :root {
+      --bg-deep:       #0a1628;
+      --bg-surface:    #111d33;
+      --bg-card:       #162440;
+      --bg-card-hover: #1b2d50;
+      --border:        #243555;
+      --border-accent: #2e6b8a;
+      --text-primary:  #e8edf5;
+      --text-secondary:#8fa3bf;
+      --text-muted:    #5a7192;
+      --accent:        #3d9fd8;
+      --accent-glow:   #2a7ab5;
+      --gold:          #d4a853;
+      --gold-muted:    #a68532;
+      --tag-bg:        #1a3352;
+      --tag-text:      #6db3e3;
+      --danger:        #c44;
+      --success:       #3a8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Header ────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #0d1f3c 0%, #132b4f 50%, #0f2440 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 2rem 2rem 1.75rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 120%, rgba(61,159,216,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    header h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+      position: relative;
+    }
+    header h1 span { color: var(--gold); }
+    header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      position: relative;
+    }
+    .header-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.25rem;
+      position: relative;
+    }
+    .stat { text-align: center; }
+    .stat-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-top: 0.15rem;
+    }
+    #captain-display {
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      position: relative;
+    }
+    #captain-display strong { color: var(--gold); }
+
+    /* ── Command Bar ───────────────────────────── */
+    .command-bar {
+      max-width: 960px;
+      margin: 1.5rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .command-bar-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .command-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .cmd-btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .cmd-btn:hover { border-color: var(--accent); color: var(--text-primary); background: var(--bg-card-hover); }
+    .cmd-btn .cmd-icon { font-size: 0.9rem; }
+    .cmd-btn .cmd-alias {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-left: 0.2rem;
+    }
+    .cmd-btn.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .cmd-btn.primary:hover { opacity: 0.9; }
+    .cmd-btn.gold { border-color: var(--gold-muted); color: var(--gold); }
+    .cmd-btn.gold:hover { border-color: var(--gold); background: rgba(212,168,83,0.1); }
+    .cmd-btn.danger { color: var(--danger); }
+    .cmd-btn.danger:hover { border-color: var(--danger); background: rgba(204,68,68,0.08); }
+
+    /* ── Search bar ────────────────────────────── */
+    .toolbar {
+      max-width: 960px;
+      margin: 1rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .search-box {
+      position: relative;
+      width: 100%;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 0.65rem 1rem 0.65rem 2.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box input::placeholder { color: var(--text-muted); }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box .icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    /* ── Notes Grid ────────────────────────────── */
+    .notes-container {
+      max-width: 960px;
+      margin: 1.5rem auto 3rem;
+      padding: 0 1.5rem;
+    }
+    .notes-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    /* ── Note Card ─────────────────────────────── */
+    .note-card {
+      background: var(--bg-surface);
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .note-card:hover { background: var(--bg-card); }
+    .note-card.expanded { background: var(--bg-card); }
+    .note-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .note-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+    .note-meta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .note-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .note-status {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .status-complete { background: rgba(51,170,136,0.15); color: var(--success); }
+    .status-draft    { background: rgba(212,168,83,0.15);  color: var(--gold); }
+    .status-default  { background: rgba(143,163,191,0.1);  color: var(--text-muted); }
+    .note-tags {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+    .tag {
+      font-size: 0.68rem;
+      padding: 0.15rem 0.55rem;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border-radius: 4px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    .note-body {
+      display: none;
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+    .note-card.expanded .note-body { display: block; }
+    .note-content {
+      font-size: 0.8rem;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      font-family: 'JetBrains Mono', 'Menlo', monospace;
+    }
+    .note-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .note-author {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .note-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .note-actions .cmd-btn { padding: 0.35rem 0.75rem; font-size: 0.7rem; }
+
+    /* ── Toast ─────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #fff;
+      background: var(--accent);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 200;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: var(--danger); }
+
+    /* ── Empty state ───────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ── Modal ─────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(5,12,24,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 1.25rem;
+      color: var(--gold);
+    }
+    .modal label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.35rem;
+      margin-top: 1rem;
+    }
+    .modal label:first-of-type { margin-top: 0; }
+    .modal input, .modal textarea {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+    .modal textarea {
+      min-height: 160px;
+      resize: vertical;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Help panel ────────────────────────────── */
+    .help-panel {
+      display: none;
+      max-width: 960px;
+      margin: 1rem auto;
+      padding: 0 1.5rem;
+    }
+    .help-panel.active { display: block; }
+    .help-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .help-card h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+    .help-card table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .help-card th {
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .help-card td {
+      padding: 0.5rem 0.5rem;
+      border-bottom: 1px solid rgba(36,53,85,0.4);
+      color: var(--text-secondary);
+    }
+    .help-card td:first-child {
+      color: var(--accent);
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+    }
+
+    /* ── Responsive ────────────────────────────── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .command-row { gap: 0.35rem; }
+      .cmd-btn { padding: 0.4rem 0.7rem; font-size: 0.72rem; }
+      .note-header { flex-direction: column; gap: 0.4rem; }
+      .note-meta { order: -1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Nate <span>Ocean</span></h1>
+    <p>A Sea of Thoughts</p>
+    <div class="header-stats">
+      <div class="stat">
+        <div class="stat-value" id="note-count">—</div>
+        <div class="stat-label">Bottled Messages</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="tag-count">—</div>
+        <div class="stat-label">Currents</div>
+      </div>
+    </div>
+    <div id="captain-display">Captain's mark: <strong id="sailor-id">…</strong></div>
+  </header>
+
+  <!-- ── Command Bar ──────────────────────────── -->
+  <div class="command-bar">
+    <div class="command-bar-label">Tide Commands</div>
+    <div class="command-row">
+      <button class="cmd-btn primary" onclick="openCastModal()">
+        <span class="cmd-icon">🌊</span> Cast <span class="cmd-alias">(new)</span>
+      </button>
+      <button class="cmd-btn primary" onclick="openBottleModal()">
+        <span class="cmd-icon">🍾</span> Bottle <span class="cmd-alias">(save)</span>
+      </button>
+      <button class="cmd-btn" onclick="loadNotes()">
+        <span class="cmd-icon">🌀</span> Tides <span class="cmd-alias">(list)</span>
+      </button>
+      <button class="cmd-btn" onclick="focusSearch()">
+        <span class="cmd-icon">🔭</span> Scan <span class="cmd-alias">(search)</span>
+      </button>
+      <button class="cmd-btn gold" onclick="showCaptain()">
+        <span class="cmd-icon">⚓</span> Captain <span class="cmd-alias">(user-id)</span>
+      </button>
+      <button class="cmd-btn gold" onclick="openPromoteModal()">
+        <span class="cmd-icon">🏴‍☠️</span> Promote <span class="cmd-alias">(change-id)</span>
+      </button>
+      <button class="cmd-btn" onclick="toggleHelp()">
+        <span class="cmd-icon">🗺️</span> Chart <span class="cmd-alias">(help)</span>
+      </button>
+      <button class="cmd-btn danger" onclick="dockServer()">
+        <span class="cmd-icon">🚢</span> Dock <span class="cmd-alias">(quit)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Help Panel ───────────────────────────── -->
+  <div class="help-panel" id="help-panel">
+    <div class="help-card">
+      <h3>🗺️ Navigation Chart</h3>
+      <table>
+        <thead>
+          <tr><th>Command</th><th>Alias</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>cast</td><td>new, n</td><td>Cast a new thought into the sea</td></tr>
+          <tr><td>bottle</td><td>save, s</td><td>Bottle a message with title &amp; content</td></tr>
+          <tr><td>sound</td><td>read, r</td><td>Read a bottled message among the waves</td></tr>
+          <tr><td>reshape</td><td>edit, e</td><td>Rewrite a bottled message from bow to stern</td></tr>
+          <tr><td>sink</td><td>delete, d</td><td>Send a bottled message below</td></tr>
+          <tr><td>tides</td><td>list, l</td><td>List every wave in your harbor</td></tr>
+          <tr><td>scan</td><td>search, f</td><td>Search the waves for a word or phrase</td></tr>
+          <tr><td>captain</td><td>user-id, u</td><td>Reveal the active Sailor ID</td></tr>
+          <tr><td>mutiny</td><td>wash, w</td><td>Wash Sailor ID mark from a bottled message</td></tr>
+          <tr><td>promote</td><td>change-id, c</td><td>Promote a new Sailor ID for this session</td></tr>
+          <tr><td>chart</td><td>help, h</td><td>Unfurl this navigation chart</td></tr>
+          <tr><td>dock</td><td>quit, q</td><td>Return to shore (shut down the server)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Search Bar ───────────────────────────── -->
+  <div class="toolbar">
+    <div class="search-box">
+      <span class="icon">⌕</span>
+      <input type="text" id="search-input" placeholder="Scan the waves…" />
+    </div>
+  </div>
+
+  <!-- ── Notes List ───────────────────────────── -->
+  <div class="notes-container">
+    <div id="notes-grid" class="notes-grid">
+      <div class="empty-state">
+        <div class="icon">⚓</div>
+        <p>Loading your sea log…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Toast ────────────────────────────────── -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ── Cast Modal (new note with frontmatter) ─ -->
+  <div class="modal-overlay" id="cast-modal">
+    <div class="modal">
+      <h2>🌊 Cast a New Thought</h2>
+      <label for="cast-title">Title</label>
+      <input type="text" id="cast-title" placeholder="Name this bottled message" />
+      <label for="cast-content">Content</label>
+      <textarea id="cast-content" placeholder="Release your thoughts into the tide…"></textarea>
+      <div class="modal-actions">
+        <button class="cmd-btn" onclick="closeModal('cast-modal')">Cancel</button>
+        <button class="cmd-btn primary" onclick="submitCast()">Cast Into the Sea</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bottle Modal (save with title & content) ─ -->
+  <div class="modal-overlay" id="bottle-modal">
+    <div class="modal">
+      <h2>🍾 Bottle a Message</h2>
+      <label for="bottle-title">Title</label>
+      <input type="text" id="bottle-title" placeholder="Name this bottled message among the waves" />
+      <label for="bottle-content">Content</label>
+      <textarea id="bottle-content" placeholder="You released a bottled message into the tide…"></textarea>
+      <div class="modal-actions">
+        <button class="cmd-btn" onclick="closeModal('bottle-modal')">Cancel</button>
+        <button class="cmd-btn primary" onclick="submitBottle()">Bottle It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Reshape Modal (edit a note) ────────── -->
+  <div class="modal-overlay" id="reshape-modal">
+    <div class="modal">
+      <h2>⛵ Reshape a Bottled Message</h2>
+      <label>Title</label>
+      <input type="text" id="reshape-title" disabled />
+      <label for="reshape-content">New Content</label>
+      <textarea id="reshape-content" placeholder="Enter replacement tide text…"></textarea>
+      <div class="modal-actions">
+        <button class="cmd-btn" onclick="closeModal('reshape-modal')">Cancel</button>
+        <button class="cmd-btn primary" onclick="submitReshape()">Reshape</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Promote Modal (change Sailor ID) ───── -->
+  <div class="modal-overlay" id="promote-modal">
+    <div class="modal">
+      <h2>🏴‍☠️ Promote a New Captain</h2>
+      <label for="promote-id">New Sailor ID</label>
+      <input type="text" id="promote-id" placeholder="Enter new Sailor ID" />
+      <div class="modal-actions">
+        <button class="cmd-btn" onclick="closeModal('promote-modal')">Cancel</button>
+        <button class="cmd-btn gold" onclick="submitPromote()">Promote</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = "";
+    let allNotes = [];
+
+    // ── Toast notifications ───────────────────────
+    function toast(msg, isError) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.className = isError ? "toast error show" : "toast show";
+      setTimeout(() => { el.className = "toast"; }, 3000);
+    }
+
+    // ── Load Captain ID ───────────────────────────
+    async function loadCaptain() {
+      try {
+        const res = await fetch(`${API}/api/captain`);
+        const data = await res.json();
+        document.getElementById("sailor-id").textContent = data.sailor_id;
+      } catch { /* ignore */ }
+    }
+
+    // ── Tides: load notes ─────────────────────────
+    async function loadNotes() {
+      try {
+        const res = await fetch(`${API}/api/notes`);
+        allNotes = await res.json();
+        renderNotes(allNotes);
+        updateStats(allNotes);
+      } catch {
+        document.getElementById("notes-grid").innerHTML = `
+          <div class="empty-state">
+            <div class="icon">⚠</div>
+            <p>Could not reach the API. Is the server running?</p>
+          </div>`;
+      }
+    }
+
+    // ── Render notes list ─────────────────────────
+    function renderNotes(notes) {
+      const grid = document.getElementById("notes-grid");
+      if (notes.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🌊</div>
+            <p>No bottled messages found. Cast your first thought into the sea.</p>
+          </div>`;
+        return;
+      }
+
+      grid.innerHTML = notes.map((note, i) => {
+        const title = note.title || note.file || "Untitled";
+        const created = formatDate(note.created);
+        const tags = parseTags(note.tags);
+        const status = note.status || "";
+        const author = note.author || "";
+        const statusClass = status === "complete" ? "status-complete"
+                          : status === "draft" ? "status-draft" : "status-default";
+        const fileId = (note.file || "").replace(/\.[^.]+$/, "");
+
+        return `
+          <div class="note-card" id="card-${i}">
+            <div class="note-header" onclick="toggleNote(${i}, '${esc(fileId)}')">
+              <div class="note-title">${escH(title)}</div>
+              <div class="note-meta">
+                ${status ? `<span class="note-status ${statusClass}">${escH(status)}</span>` : ""}
+                <span class="note-date">${escH(created)}</span>
+              </div>
+            </div>
+            ${tags.length ? `<div class="note-tags">${tags.map(t => `<span class="tag">${escH(t)}</span>`).join("")}</div>` : ""}
+            <div class="note-body" id="body-${i}">
+              <div class="note-content">Loading…</div>
+              <div class="note-footer">
+                <span class="note-author">${author ? "Sailor: " + escH(author) : ""}</span>
+                <div class="note-actions">
+                  <button class="cmd-btn" onclick="event.stopPropagation(); openReshapeModal('${esc(fileId)}')">
+                    ⛵ Reshape <span class="cmd-alias">(edit)</span>
+                  </button>
+                  <button class="cmd-btn gold" onclick="event.stopPropagation(); washNote('${esc(fileId)}')">
+                    🧹 Mutiny <span class="cmd-alias">(wash)</span>
+                  </button>
+                  <button class="cmd-btn danger" onclick="event.stopPropagation(); sinkNote('${esc(fileId)}')">
+                    🗑 Sink <span class="cmd-alias">(delete)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    // ── Sound: expand / read a note ───────────────
+    async function toggleNote(index, fileId) {
+      const card = document.getElementById(`card-${index}`);
+      if (card.classList.contains("expanded")) {
+        card.classList.remove("expanded");
+        return;
+      }
+      document.querySelectorAll(".note-card.expanded").forEach(c => c.classList.remove("expanded"));
+      try {
+        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        card.querySelector(".note-content").textContent = data.content || "(empty)";
+      } catch {
+        card.querySelector(".note-content").textContent = "⚠ Could not load note content.";
+      }
+      card.classList.add("expanded");
+    }
+
+    // ── Scan: search ──────────────────────────────
+    let searchTimeout;
+    document.getElementById("search-input").addEventListener("input", (e) => {
+      clearTimeout(searchTimeout);
+      const q = e.target.value.trim();
+      searchTimeout = setTimeout(async () => {
+        if (!q) { renderNotes(allNotes); return; }
+        try {
+          const res = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          renderNotes(data.results || []);
+        } catch { renderNotes([]); }
+      }, 300);
+    });
+
+    function focusSearch() {
+      document.getElementById("search-input").focus();
+    }
+
+    // ── Cast: create note (with frontmatter) ──────
+    function openCastModal() {
+      document.getElementById("cast-title").value = "";
+      document.getElementById("cast-content").value = "";
+      document.getElementById("cast-modal").classList.add("active");
+    }
+
+    async function submitCast() {
+      const title = document.getElementById("cast-title").value.trim();
+      const content = document.getElementById("cast-content").value;
+      if (!title || !content) { toast("Title and content are required.", true); return; }
+      try {
+        const res = await fetch(`${API}/api/notes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, content })
+        });
+        if (!res.ok) { toast("Failed to cast note.", true); return; }
+        closeModal("cast-modal");
+        toast(`Bottle '${title}' now drifts in your sea log.`);
+        loadNotes();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Bottle: save note (same as cast, alternate command) ──
+    function openBottleModal() {
+      document.getElementById("bottle-title").value = "";
+      document.getElementById("bottle-content").value = "";
+      document.getElementById("bottle-modal").classList.add("active");
+    }
+
+    async function submitBottle() {
+      const title = document.getElementById("bottle-title").value.trim();
+      const content = document.getElementById("bottle-content").value;
+      if (!title || !content) { toast("Title and content are required.", true); return; }
+      try {
+        const res = await fetch(`${API}/api/notes`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, content })
+        });
+        if (!res.ok) { toast("Failed to bottle message.", true); return; }
+        closeModal("bottle-modal");
+        toast(`Bottle '${title}' now drifts in your sea log.`);
+        loadNotes();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Reshape: edit a note ──────────────────────
+    let reshapeFileId = null;
+    function openReshapeModal(fileId) {
+      reshapeFileId = fileId;
+      document.getElementById("reshape-title").value = fileId;
+      document.getElementById("reshape-content").value = "";
+      document.getElementById("reshape-modal").classList.add("active");
+      // Pre-load current content
+      fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`)
+        .then(r => r.json())
+        .then(data => { document.getElementById("reshape-content").value = data.content || ""; })
+        .catch(() => {});
+    }
+
+    async function submitReshape() {
+      const content = document.getElementById("reshape-content").value;
+      if (!content) { toast("Content cannot be empty.", true); return; }
+      try {
+        const res = await fetch(`${API}/api/notes/${encodeURIComponent(reshapeFileId)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content })
+        });
+        if (!res.ok) { toast("Failed to reshape note.", true); return; }
+        closeModal("reshape-modal");
+        toast(`Bottled message '${reshapeFileId}' has been reshaped.`);
+        loadNotes();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Sink: delete a note ───────────────────────
+    async function sinkNote(fileId) {
+      if (!confirm(`Sink "${fileId}" beneath the surface?`)) return;
+      try {
+        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`, { method: "DELETE" });
+        if (!res.ok) { toast("Failed to sink note.", true); return; }
+        toast(`Bottled message '${fileId}' slipped beneath the surface.`);
+        loadNotes();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Mutiny / Wash: remove Sailor ID ───────────
+    async function washNote(fileId) {
+      if (!confirm(`Wash the captain's mark from "${fileId}"?`)) return;
+      try {
+        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}/wash`, { method: "POST" });
+        if (!res.ok) { toast("Failed to wash note.", true); return; }
+        const data = await res.json();
+        toast(data.changed
+          ? `Captain mark washed from '${fileId}'.`
+          : `'${fileId}' has no captain mark to wash away.`);
+        loadNotes();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Captain: show Sailor ID ───────────────────
+    async function showCaptain() {
+      try {
+        const res = await fetch(`${API}/api/captain`);
+        const data = await res.json();
+        toast(`The captain's mark is: ${data.sailor_id}`);
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Promote: change Sailor ID ─────────────────
+    function openPromoteModal() {
+      document.getElementById("promote-id").value = "";
+      document.getElementById("promote-modal").classList.add("active");
+    }
+
+    async function submitPromote() {
+      const newId = document.getElementById("promote-id").value.trim();
+      if (!newId) { toast("Sailor ID cannot be empty.", true); return; }
+      try {
+        const res = await fetch(`${API}/api/captain`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sailor_id: newId })
+        });
+        if (!res.ok) { toast("Failed to promote.", true); return; }
+        closeModal("promote-modal");
+        toast(`Active Sailor ID set to '${newId}'.`);
+        loadCaptain();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Chart: toggle help panel ──────────────────
+    function toggleHelp() {
+      document.getElementById("help-panel").classList.toggle("active");
+    }
+
+    // ── Dock: shut down server ────────────────────
+    function dockServer() {
+      if (!confirm("Return to shore? This will shut down the server.")) return;
+      fetch(`${API}/api/heartbeat`, { method: "POST" }).catch(() => {});
+      // Stop heartbeats — server will auto-shutdown after timeout
+      clearInterval(heartbeatInterval);
+      toast("Fair winds. The server will dock shortly…");
+    }
+
+    // ── Modal helpers ─────────────────────────────
+    function closeModal(id) {
+      document.getElementById(id).classList.remove("active");
+    }
+    document.querySelectorAll(".modal-overlay").forEach(el => {
+      el.addEventListener("click", (e) => {
+        if (e.target === el) el.classList.remove("active");
+      });
+    });
+
+    // ── Stats ─────────────────────────────────────
+    function updateStats(notes) {
+      document.getElementById("note-count").textContent = notes.length;
+      const tagSet = new Set();
+      notes.forEach(n => parseTags(n.tags).forEach(t => tagSet.add(t)));
+      document.getElementById("tag-count").textContent = tagSet.size;
+    }
+
+    // ── Helpers ───────────────────────────────────
+    function parseTags(raw) {
+      if (!raw) return [];
+      if (Array.isArray(raw)) return raw;
+      return raw.replace(/[\[\]]/g, "").split(",").map(t => t.trim()).filter(Boolean);
+    }
+    function formatDate(iso) {
+      if (!iso) return "";
+      try {
+        return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+      } catch { return iso; }
+    }
+    function escH(str) {
+      const el = document.createElement("span");
+      el.textContent = str;
+      return el.innerHTML;
+    }
+    function esc(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+
+    // ── Heartbeat ─────────────────────────────────
+    const heartbeatInterval = setInterval(() => {
+      fetch("/api/heartbeat", { method: "POST" }).catch(() => {});
+    }, 2000);
+    fetch("/api/heartbeat", { method: "POST" }).catch(() => {});
+
+    // ── Init ──────────────────────────────────────
+    loadNotes();
+    loadCaptain();
+  </script>
+</body>
+</html>
