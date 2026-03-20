@@ -11,15 +11,13 @@ APP_NAME = "Nate Ocean: A Sea of Thoughts"
 APP_VERSION = "1.5"
 STARTUP_DIVIDER_WIDTH = 40
 LIST_DIVIDER_WIDTH = 60
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-DEFAULT_EDITOR = "nano"
 
-# Shared constants imported from notes_core
-ROOT_NOTES_DIR_NAME = notes_core.ROOT_NOTES_DIR_NAME
-NESTED_NOTES_DIR_NAME = notes_core.NESTED_NOTES_DIR_NAME
-NOTE_EXTENSIONS = notes_core.NOTE_EXTENSIONS
-PRIMARY_NOTE_EXTENSION = notes_core.PRIMARY_NOTE_EXTENSION
-USER_ID_FOOTER_LABEL = notes_core.USER_ID_FOOTER_LABEL
+ROOT_NOTES_DIR_NAME = ".notes"
+NESTED_NOTES_DIR_NAME = "notes"
+NOTE_EXTENSIONS = (".md", ".note", ".txt")
+PRIMARY_NOTE_EXTENSION = ".md"
+
+USER_ID_FOOTER_LABEL = "Sailor ID"
 PROMPT_LABEL = "current> "
 READ_TITLE_PROMPT = "Name the bottled message to read among the waves: "
 WASH_TITLE_PROMPT = "Name the bottled message to wash the captain mark from: "
@@ -121,7 +119,7 @@ def get_user_footer_capture_regex():
 
 def open_note_in_editor(note_file):
     """Open the note file in the system's default editor."""
-    editor = os.getenv("EDITOR", DEFAULT_EDITOR)
+    editor = os.getenv("EDITOR", "nano")
     subprocess.run([editor, str(note_file)])
 
 
@@ -475,10 +473,70 @@ def read_note(notes_dir, title=""):
         print(f"Bottled message '{title}' is saved, still afloat among the waves in your sea log.")
     else:
         print(f"Bottled message '{title}' was not found among the waves in this harbor.")
+def parse_tags(raw):
+    """Parse a raw tag value (string or list) into a Python list of strings."""
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return [t.strip() for t in raw if t.strip()]
+    raw = str(raw).strip()
+    raw = raw.strip("[]")
+    return [t.strip() for t in raw.split(",") if t.strip()]
+
+
+def format_tags(tag_list):
+    """Format a list of tag strings into YAML inline array notation."""
+    if not tag_list:
+        return "[]"
+    return "[" + ", ".join(t.strip() for t in tag_list if t.strip()) + "]"
+
+
+def generate_auto_tags(title, content, existing_tags=None, max_tags=5):
+    """Generate suggested tags from title and content using keyword analysis."""
+    text = f"{title} {content}".lower()
+    existing = set(t.lower() for t in (existing_tags or []))
+
+    # Topic keyword map — if any keyword appears, suggest the tag
+    topic_map = {
+        "programming":   ["function", "variable", "class ", "def ", "import ", "code", "syntax", "debug", "compile"],
+        "computer science": ["algorithm", "data structure", "binary", "hash table", "linked list", "tree", "graph", "recursion", "complexity"],
+        "coursework":    ["study", "midterm", "exam", "assignment", "lecture", "homework", "semester", "professor", "quiz"],
+        "meetings":      ["meeting", "attendee", "agenda", "action item", "minutes", "discussion", "scheduled"],
+        "planning":      ["timeline", "milestone", "roadmap", "estimated", "prioritize", "deadline", "phase"],
+        "projects":      ["project", "tech stack", "feature", "sprint", "mvp", "prototype", "deploy"],
+        "ideas":         ["idea", "brainstorm", "concept", "what if", "explore", "perhaps", "maybe we"],
+        "writing":       ["draft", "chapter", "paragraph", "prose", "narrative", "story", "essay"],
+        "research":      ["research", "study", "findings", "hypothesis", "experiment", "survey", "analysis"],
+        "personal":      ["journal", "diary", "personal", "reflection", "today i", "feeling"],
+        "documentation": ["documentation", "readme", "api", "reference", "guide", "tutorial", "how to"],
+        "design":        ["design", "mockup", "wireframe", "ui", "ux", "layout", "prototype"],
+        "literature":    ["play", "poem", "sonnet", "tragedy", "comedy", "act ", "scene "],
+        "history":       ["century", "historical", "ancient", "medieval", "war ", "reign"],
+    }
+
+    suggested = []
+    for tag, keywords in topic_map.items():
+        if tag.lower() in existing:
+            continue
+        if any(kw in text for kw in keywords):
+            suggested.append(tag)
+
+    # Also extract capitalized proper nouns / distinctive words from title
+    title_words = re.findall(r'\b[A-Z][a-z]{2,}\b', title)
+    for word in title_words:
+        w = word.lower()
+        if w not in existing and w not in suggested and len(w) > 2:
+            suggested.append(w)
+            if len(suggested) >= max_tags:
+                break
+
+    return suggested[:max_tags]
+
+
 def build_frontmatter(title, tags=None, creator=None):
     """Build a YAML frontmatter string for a new note."""
-    now = datetime.now(timezone.utc).strftime(DATETIME_FORMAT)
-    tag_list = tags if tags else "[]"
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    tag_list = format_tags(tags) if isinstance(tags, list) else (tags if tags else "[]")
     creator = creator or get_current_user_id()
     return (
         f"---\ntitle: {title}\ncreated: {now}\nmodified: {now}\n"
@@ -489,7 +547,7 @@ def build_frontmatter(title, tags=None, creator=None):
 
 def update_modified_timestamp(content):
     """Update the modified timestamp in YAML frontmatter to now."""
-    now = datetime.now(timezone.utc).strftime(DATETIME_FORMAT)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return re.sub(r'modified: .+', f'modified: {now}', content)
 
 
@@ -511,7 +569,7 @@ def update_yaml_field(content, key, value):
 
 def touch_note_access(content, user_id=None):
     """Update last_opened and last_accessed_by in YAML frontmatter."""
-    now = datetime.now(timezone.utc).strftime(DATETIME_FORMAT)
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     user_id = user_id or get_current_user_id()
     content = update_yaml_field(content, "last_opened", now)
     content = update_yaml_field(content, "last_accessed_by", user_id)

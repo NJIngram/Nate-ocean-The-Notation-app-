@@ -185,6 +185,65 @@
       pointer-events: none;
     }
 
+    /* ── Tag Filter Bar ─────────────────────────── */
+    .tag-filter-bar {
+      max-width: 960px;
+      margin: 0.6rem auto 0;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .tag-filter-bar .filter-label {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-right: 0.25rem;
+    }
+    .tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag-chip:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+    .tag-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg-main);
+    }
+    .tag-chip .tag-count {
+      opacity: 0.65;
+      font-size: 0.65rem;
+    }
+    .tag-chip-clear {
+      display: none;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      border: 1px solid var(--danger);
+      background: transparent;
+      color: var(--danger);
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag-chip-clear:hover {
+      background: rgba(204,68,68,0.1);
+    }
+    .tag-chip-clear.visible {
+      display: inline-block;
+    }
+
     /* ── Notes Grid ────────────────────────────── */
     .notes-container {
       max-width: 960px;
@@ -451,9 +510,264 @@
       .note-header { flex-direction: column; gap: 0.4rem; }
       .note-meta { order: -1; }
     }
+    /* ── Drop Zone Overlay ───────────────────── */
+    .drop-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,22,40,0.92);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .drop-overlay.active { display: flex; }
+    .drop-overlay .drop-icon { font-size: 4rem; opacity: 0.7; }
+    .drop-overlay .drop-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      color: var(--gold);
+    }
+    .drop-overlay .drop-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ── Upload Modal Preview ─────────────────── */
+    .upload-preview {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-align: center;
+    }
+    .upload-preview img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 6px;
+    }
+    .upload-preview video {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 6px;
+    }
+    .upload-preview audio { width: 100%; }
+    .upload-preview .file-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    /* ── Auth Screen ───────────────────────────── */
+    .auth-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--bg-deep);
+    }
+    .auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .auth-card h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--text-primary);
+      margin-bottom: 0.25rem;
+    }
+    .auth-card h1 span { color: var(--gold); }
+    .auth-card .auth-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.75rem;
+    }
+    .auth-card .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .auth-card .auth-tab {
+      flex: 1;
+      padding: 0.6rem;
+      background: var(--bg-card);
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .auth-card .auth-tab.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .auth-card label {
+      display: block;
+      text-align: left;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.3rem;
+      margin-top: 0.9rem;
+    }
+    .auth-card input {
+      width: 100%;
+      padding: 0.6rem 0.85rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .auth-card input:focus { border-color: var(--accent); }
+    .auth-card .auth-btn {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.7rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .auth-card .auth-btn:hover { opacity: 0.9; }
+    .auth-card .auth-error {
+      color: var(--danger);
+      font-size: 0.78rem;
+      margin-top: 0.75rem;
+      min-height: 1.2em;
+    }
+    #app-main { display: none; }
+    .user-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      position: relative;
+    }
+    .user-badge strong { color: var(--accent); }
+    .user-badge .logout-link {
+      color: var(--text-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.7rem;
+    }
+    .user-badge .logout-link:hover { color: var(--danger); }
+
+    /* ── Tag Input ────────────────────────── */
+    .tag-input-wrap {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .tag-input-wrap input {
+      flex: 1;
+      min-width: 140px;
+    }
+    .auto-tag-btn {
+      padding: 0.55rem 0.85rem;
+      border: 1px solid var(--gold-muted);
+      border-radius: 6px;
+      background: rgba(212,168,83,0.1);
+      color: var(--gold);
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .auto-tag-btn:hover { border-color: var(--gold); background: rgba(212,168,83,0.2); }
+    .tag-suggestions {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .tag-suggestion {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      border: 1px solid transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tag-suggestion:hover { border-color: var(--accent); }
+    .tag-suggestion.added { background: var(--accent); color: #fff; }
+    .inline-tag-edit {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 0.5rem;
+    }
+    .inline-tag-edit input {
+      flex: 1;
+      min-width: 120px;
+      padding: 0.3rem 0.6rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.75rem;
+      outline: none;
+    }
+    .inline-tag-edit input:focus { border-color: var(--accent); }
+    .inline-tag-edit .cmd-btn { padding: 0.25rem 0.5rem; font-size: 0.68rem; }
   </style>
 </head>
 <body>
+
+  <!-- ── Auth Screen ──────────────────────────── -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-card">
+      <h1>Nate <span>Ocean</span></h1>
+      <div class="auth-subtitle">A Sea of Thoughts</div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+      </div>
+      <form id="auth-form" onsubmit="return handleAuth(event)">
+        <label for="auth-username">Username</label>
+        <input type="text" id="auth-username" placeholder="Your sailor name" autocomplete="username" required />
+        <label for="auth-password">Password</label>
+        <input type="password" id="auth-password" placeholder="Secret passage" autocomplete="current-password" required />
+        <button class="auth-btn" type="submit" id="auth-submit-btn">Sign In</button>
+      </form>
+      <div class="auth-error" id="auth-error"></div>
+    </div>
+  </div>
+
+  <!-- ── Main App (hidden until authenticated) ── -->
+  <div id="app-main">
 
   <header>
     <h1>Nate <span>Ocean</span></h1>
@@ -469,6 +783,7 @@
       </div>
     </div>
     <div id="captain-display">Captain's mark: <strong id="sailor-id">…</strong></div>
+    <div class="user-badge">Logged in as <strong id="username-display"></strong> <span class="logout-link" onclick="doLogout()">(log out)</span></div>
   </header>
 
   <!-- ── Command Bar ──────────────────────────── -->
@@ -480,6 +795,9 @@
       </button>
       <button class="cmd-btn primary" onclick="openBottleModal()">
         <span class="cmd-icon">🍾</span> Bottle <span class="cmd-alias">(save)</span>
+      </button>
+      <button class="cmd-btn primary" onclick="openImportModal()">
+        <span class="cmd-icon">📦</span> Import <span class="cmd-alias">(upload)</span>
       </button>
       <button class="cmd-btn" onclick="loadNotes()">
         <span class="cmd-icon">🌀</span> Tides <span class="cmd-alias">(list)</span>
@@ -497,7 +815,7 @@
         <span class="cmd-icon">🗺️</span> Chart <span class="cmd-alias">(help)</span>
       </button>
       <button class="cmd-btn danger" onclick="dockServer()">
-        <span class="cmd-icon">🚢</span> Dock <span class="cmd-alias">(quit)</span>
+        <span class="cmd-icon">🚢</span> Dock <span class="cmd-alias">(logout)</span>
       </button>
     </div>
   </div>
@@ -522,7 +840,7 @@
           <tr><td>mutiny</td><td>wash, w</td><td>Wash Sailor ID mark from a bottled message</td></tr>
           <tr><td>promote</td><td>change-id, c</td><td>Promote a new Sailor ID for this session</td></tr>
           <tr><td>chart</td><td>help, h</td><td>Unfurl this navigation chart</td></tr>
-          <tr><td>dock</td><td>quit, q</td><td>Return to shore (shut down the server)</td></tr>
+          <tr><td>dock</td><td>quit, q</td><td>Return to shore (log out)</td></tr>
         </tbody>
       </table>
     </div>
@@ -534,6 +852,12 @@
       <span class="icon">⌕</span>
       <input type="text" id="search-input" placeholder="Scan the waves…" />
     </div>
+  </div>
+
+  <!-- ── Tag Filter Bar ─────────────────────────── -->
+  <div class="tag-filter-bar" id="tag-filter-bar">
+    <span class="filter-label">🏷 Filter:</span>
+    <button class="tag-chip-clear" id="tag-clear-btn" onclick="clearTagFilter()">✕ Clear</button>
   </div>
 
   <!-- ── Notes List ───────────────────────────── -->
@@ -548,7 +872,12 @@
 
   <!-- ── Toast ────────────────────────────────── -->
   <div class="toast" id="toast"></div>
-
+  <!-- ── Drop Zone Overlay ────────────────────── -->
+  <div class="drop-overlay" id="drop-overlay">
+    <div class="drop-icon">⚓</div>
+    <div class="drop-text">Drop to Cast Into the Sea</div>
+    <div class="drop-hint">Release your cargo — a note will be created from this file</div>
+  </div>
   <!-- ── Cast Modal (new note with frontmatter) ─ -->
   <div class="modal-overlay" id="cast-modal">
     <div class="modal">
@@ -557,6 +886,12 @@
       <input type="text" id="cast-title" placeholder="Name this bottled message" />
       <label for="cast-content">Content</label>
       <textarea id="cast-content" placeholder="Release your thoughts into the tide…"></textarea>
+      <label for="cast-tags">Tags</label>
+      <div class="tag-input-wrap">
+        <input type="text" id="cast-tags" placeholder="comma-separated: project, idea, draft" />
+        <button type="button" class="auto-tag-btn" onclick="autoTag('cast')">⚓ Auto-tag</button>
+      </div>
+      <div class="tag-suggestions" id="cast-suggestions"></div>
       <div class="modal-actions">
         <button class="cmd-btn" onclick="closeModal('cast-modal')">Cancel</button>
         <button class="cmd-btn primary" onclick="submitCast()">Cast Into the Sea</button>
@@ -572,6 +907,12 @@
       <input type="text" id="bottle-title" placeholder="Name this bottled message among the waves" />
       <label for="bottle-content">Content</label>
       <textarea id="bottle-content" placeholder="You released a bottled message into the tide…"></textarea>
+      <label for="bottle-tags">Tags</label>
+      <div class="tag-input-wrap">
+        <input type="text" id="bottle-tags" placeholder="comma-separated: project, idea, draft" />
+        <button type="button" class="auto-tag-btn" onclick="autoTag('bottle')">⚓ Auto-tag</button>
+      </div>
+      <div class="tag-suggestions" id="bottle-suggestions"></div>
       <div class="modal-actions">
         <button class="cmd-btn" onclick="closeModal('bottle-modal')">Cancel</button>
         <button class="cmd-btn primary" onclick="submitBottle()">Bottle It</button>
@@ -587,6 +928,12 @@
       <input type="text" id="reshape-title" disabled />
       <label for="reshape-content">New Content</label>
       <textarea id="reshape-content" placeholder="Enter replacement tide text…"></textarea>
+      <label for="reshape-tags">Tags</label>
+      <div class="tag-input-wrap">
+        <input type="text" id="reshape-tags" placeholder="comma-separated: project, idea, draft" />
+        <button type="button" class="auto-tag-btn" onclick="autoTag('reshape')">⚓ Auto-tag</button>
+      </div>
+      <div class="tag-suggestions" id="reshape-suggestions"></div>
       <div class="modal-actions">
         <button class="cmd-btn" onclick="closeModal('reshape-modal')">Cancel</button>
         <button class="cmd-btn primary" onclick="submitReshape()">Reshape</button>
@@ -608,6 +955,24 @@
     </div>
   </div>
 
+  <!-- ── Upload / Import Modal ──────────────── -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal">
+      <h2>📦 Import Cargo</h2>
+      <label for="upload-file">Choose a file or drag &amp; drop anywhere</label>
+      <input type="file" id="upload-file" style="margin-top:0.35rem;color:var(--text-secondary);font-size:0.85rem;" />
+      <div id="upload-preview" class="upload-preview" style="display:none;"></div>
+      <label for="upload-title">Note Title <span style="font-size:0.6rem;text-transform:none;letter-spacing:0;color:var(--text-muted);">(auto-generated, editable)</span></label>
+      <input type="text" id="upload-title" placeholder="Auto-generated from file context…" />
+      <div class="modal-actions">
+        <button class="cmd-btn" onclick="closeUploadModal()">Cancel</button>
+        <button class="cmd-btn primary" id="upload-submit-btn" onclick="submitUpload()" disabled>Cast Cargo Into the Sea</button>
+      </div>
+    </div>
+  </div>
+
+  </div> <!-- end #app-main -->
+
   <script>
     const API = "";
     let allNotes = [];
@@ -620,10 +985,21 @@
       setTimeout(() => { el.className = "toast"; }, 3000);
     }
 
+    // ── Auth-aware fetch: redirect to login on 401 ────
+    async function apiFetch(url, opts) {
+      const res = await fetch(url, opts);
+      if (res.status === 401) {
+        toast("Session expired — please log in again.", true);
+        doLogout();
+        throw new Error("auth");
+      }
+      return res;
+    }
+
     // ── Load Captain ID ───────────────────────────
     async function loadCaptain() {
       try {
-        const res = await fetch(`${API}/api/captain`);
+        const res = await apiFetch(`${API}/api/captain`);
         const data = await res.json();
         document.getElementById("sailor-id").textContent = data.sailor_id;
       } catch { /* ignore */ }
@@ -632,7 +1008,7 @@
     // ── Tides: load notes ─────────────────────────
     async function loadNotes() {
       try {
-        const res = await fetch(`${API}/api/notes`);
+        const res = await apiFetch(`${API}/api/notes`);
         allNotes = await res.json();
         renderNotes(allNotes);
         updateStats(allNotes);
@@ -684,6 +1060,12 @@
                 <span><span class="meta-label">Last Opened:</span> <span class="meta-last-opened">—</span></span>
                 <span><span class="meta-label">Last Accessed By:</span> <span class="meta-last-accessed">—</span></span>
               </div>
+              <div class="inline-tag-edit">
+                <span style="font-size:0.68rem;color:var(--gold);font-weight:600;">Tags:</span>
+                <input type="text" id="inline-tags-${i}" value="${escH(tags.join(', '))}" placeholder="Add tags…" />
+                <button class="cmd-btn" onclick="event.stopPropagation(); saveInlineTags('${esc(fileId)}', 'inline-tags-${i}')">Save</button>
+                <button class="cmd-btn gold" onclick="event.stopPropagation(); autoTagInline('${esc(fileId)}', 'inline-tags-${i}')">⚓ Auto</button>
+              </div>
               <div class="note-content">Loading…</div>
               <div class="note-footer">
                 <span class="note-author">${creator ? "Sailor: " + escH(creator) : ""}</span>
@@ -713,7 +1095,7 @@
       }
       document.querySelectorAll(".note-card.expanded").forEach(c => c.classList.remove("expanded"));
       try {
-        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`);
+        const res = await apiFetch(`${API}/api/notes/${encodeURIComponent(fileId)}`);
         if (!res.ok) throw new Error();
         const data = await res.json();
         card.querySelector(".note-content").textContent = data.content || "(empty)";
@@ -737,12 +1119,24 @@
       clearTimeout(searchTimeout);
       const q = e.target.value.trim();
       searchTimeout = setTimeout(async () => {
-        if (!q) { renderNotes(allNotes); return; }
-        try {
-          const res = await fetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
-          const data = await res.json();
-          renderNotes(data.results || []);
-        } catch { renderNotes([]); }
+        let notes;
+        if (!q) {
+          notes = allNotes;
+        } else {
+          try {
+            const res = await apiFetch(`${API}/api/search?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            notes = data.results || [];
+          } catch { notes = []; }
+        }
+        // Also apply active tag filters
+        if (activeTagFilters.size > 0) {
+          notes = notes.filter(n => {
+            const t = parseTags(n.tags);
+            return [...activeTagFilters].every(f => t.includes(f));
+          });
+        }
+        renderNotes(notes);
       }, 300);
     });
 
@@ -750,27 +1144,77 @@
       document.getElementById("search-input").focus();
     }
 
+    // ── Tag filter ─────────────────────────────────
+    let activeTagFilters = new Set();
+
+    async function loadTagFilters() {
+      try {
+        const res = await apiFetch(`${API}/api/tags`);
+        const data = await res.json();
+        const bar = document.getElementById("tag-filter-bar");
+        // Remove old chips (keep label and clear button)
+        bar.querySelectorAll(".tag-chip").forEach(el => el.remove());
+        const clearBtn = document.getElementById("tag-clear-btn");
+        const sorted = Object.entries(data.tags || {}).sort((a, b) => b[1] - a[1]);
+        sorted.forEach(([tag, count]) => {
+          const chip = document.createElement("button");
+          chip.className = "tag-chip" + (activeTagFilters.has(tag) ? " active" : "");
+          chip.innerHTML = `${escH(tag)} <span class="tag-count">${count}</span>`;
+          chip.addEventListener("click", () => toggleTagFilter(tag, chip));
+          bar.insertBefore(chip, clearBtn);
+        });
+      } catch { /* ignore */ }
+    }
+
+    function toggleTagFilter(tag, chip) {
+      if (activeTagFilters.has(tag)) {
+        activeTagFilters.delete(tag);
+        chip.classList.remove("active");
+      } else {
+        activeTagFilters.add(tag);
+        chip.classList.add("active");
+      }
+      document.getElementById("tag-clear-btn").className =
+        "tag-chip-clear" + (activeTagFilters.size > 0 ? " visible" : "");
+      applyTagFilter();
+    }
+
+    function applyTagFilter() {
+      // Trigger the search input handler which now also applies tag filters
+      document.getElementById("search-input").dispatchEvent(new Event("input"));
+    }
+
+    function clearTagFilter() {
+      activeTagFilters.clear();
+      document.querySelectorAll(".tag-chip.active").forEach(c => c.classList.remove("active"));
+      document.getElementById("tag-clear-btn").className = "tag-chip-clear";
+      document.getElementById("search-input").dispatchEvent(new Event("input"));
+    }
     // ── Cast: create note (with frontmatter) ──────
     function openCastModal() {
       document.getElementById("cast-title").value = "";
       document.getElementById("cast-content").value = "";
+      document.getElementById("cast-tags").value = "";
+      document.getElementById("cast-suggestions").innerHTML = "";
       document.getElementById("cast-modal").classList.add("active");
     }
 
     async function submitCast() {
       const title = document.getElementById("cast-title").value.trim();
       const content = document.getElementById("cast-content").value;
+      const tags = parseTags(document.getElementById("cast-tags").value);
       if (!title || !content) { toast("Title and content are required.", true); return; }
       try {
-        const res = await fetch(`${API}/api/notes`, {
+        const res = await apiFetch(`${API}/api/notes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, content })
+          body: JSON.stringify({ title, content, tags })
         });
         if (!res.ok) { toast("Failed to cast note.", true); return; }
         closeModal("cast-modal");
         toast(`Bottle '${title}' now drifts in your sea log.`);
         loadNotes();
+        loadTagFilters();
       } catch { toast("Could not reach the server.", true); }
     }
 
@@ -778,23 +1222,27 @@
     function openBottleModal() {
       document.getElementById("bottle-title").value = "";
       document.getElementById("bottle-content").value = "";
+      document.getElementById("bottle-tags").value = "";
+      document.getElementById("bottle-suggestions").innerHTML = "";
       document.getElementById("bottle-modal").classList.add("active");
     }
 
     async function submitBottle() {
       const title = document.getElementById("bottle-title").value.trim();
       const content = document.getElementById("bottle-content").value;
+      const tags = parseTags(document.getElementById("bottle-tags").value);
       if (!title || !content) { toast("Title and content are required.", true); return; }
       try {
-        const res = await fetch(`${API}/api/notes`, {
+        const res = await apiFetch(`${API}/api/notes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title, content })
+          body: JSON.stringify({ title, content, tags })
         });
         if (!res.ok) { toast("Failed to bottle message.", true); return; }
         closeModal("bottle-modal");
         toast(`Bottle '${title}' now drifts in your sea log.`);
         loadNotes();
+        loadTagFilters();
       } catch { toast("Could not reach the server.", true); }
     }
 
@@ -804,27 +1252,38 @@
       reshapeFileId = fileId;
       document.getElementById("reshape-title").value = fileId;
       document.getElementById("reshape-content").value = "";
+      document.getElementById("reshape-tags").value = "";
+      document.getElementById("reshape-suggestions").innerHTML = "";
       document.getElementById("reshape-modal").classList.add("active");
-      // Pre-load current content
+      // Pre-load current content and tags
       fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`)
-        .then(r => r.json())
-        .then(data => { document.getElementById("reshape-content").value = data.content || ""; })
+        .then(r => {
+          if (r.status === 401) { doLogout(); return {}; }
+          return r.json();
+        })
+        .then(data => {
+          document.getElementById("reshape-content").value = data.content || "";
+          const tags = parseTags(data.tags);
+          document.getElementById("reshape-tags").value = tags.join(", ");
+        })
         .catch(() => {});
     }
 
     async function submitReshape() {
       const content = document.getElementById("reshape-content").value;
+      const tags = parseTags(document.getElementById("reshape-tags").value);
       if (!content) { toast("Content cannot be empty.", true); return; }
       try {
-        const res = await fetch(`${API}/api/notes/${encodeURIComponent(reshapeFileId)}`, {
+        const res = await apiFetch(`${API}/api/notes/${encodeURIComponent(reshapeFileId)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content })
+          body: JSON.stringify({ content, tags })
         });
         if (!res.ok) { toast("Failed to reshape note.", true); return; }
         closeModal("reshape-modal");
         toast(`Bottled message '${reshapeFileId}' has been reshaped.`);
         loadNotes();
+        loadTagFilters();
       } catch { toast("Could not reach the server.", true); }
     }
 
@@ -832,10 +1291,11 @@
     async function sinkNote(fileId) {
       if (!confirm(`Sink "${fileId}" beneath the surface?`)) return;
       try {
-        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}`, { method: "DELETE" });
+        const res = await apiFetch(`${API}/api/notes/${encodeURIComponent(fileId)}`, { method: "DELETE" });
         if (!res.ok) { toast("Failed to sink note.", true); return; }
         toast(`Bottled message '${fileId}' slipped beneath the surface.`);
         loadNotes();
+        loadTagFilters();
       } catch { toast("Could not reach the server.", true); }
     }
 
@@ -843,7 +1303,7 @@
     async function washNote(fileId) {
       if (!confirm(`Wash the captain's mark from "${fileId}"?`)) return;
       try {
-        const res = await fetch(`${API}/api/notes/${encodeURIComponent(fileId)}/wash`, { method: "POST" });
+        const res = await apiFetch(`${API}/api/notes/${encodeURIComponent(fileId)}/wash`, { method: "POST" });
         if (!res.ok) { toast("Failed to wash note.", true); return; }
         const data = await res.json();
         toast(data.changed
@@ -856,7 +1316,7 @@
     // ── Captain: show Sailor ID ───────────────────
     async function showCaptain() {
       try {
-        const res = await fetch(`${API}/api/captain`);
+        const res = await apiFetch(`${API}/api/captain`);
         const data = await res.json();
         toast(`The captain's mark is: ${data.sailor_id}`);
       } catch { toast("Could not reach the server.", true); }
@@ -868,7 +1328,7 @@
       document.getElementById("promote-modal").classList.add("active");
       // Load captain history
       try {
-        const res = await fetch(`${API}/api/captain/history`);
+        const res = await apiFetch(`${API}/api/captain/history`);
         const data = await res.json();
         const container = document.getElementById("captain-history");
         if (data.history && data.history.length > 0) {
@@ -891,7 +1351,7 @@
       const newId = document.getElementById("promote-id").value.trim();
       if (!newId) { toast("Sailor ID cannot be empty.", true); return; }
       try {
-        const res = await fetch(`${API}/api/captain`, {
+        const res = await apiFetch(`${API}/api/captain`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sailor_id: newId })
@@ -908,13 +1368,11 @@
       document.getElementById("help-panel").classList.toggle("active");
     }
 
-    // ── Dock: shut down server ────────────────────
+    // ── Dock: log out and return to login screen ──
     function dockServer() {
-      if (!confirm("Return to shore? This will shut down the server.")) return;
-      fetch(`${API}/api/heartbeat`, { method: "POST" }).catch(() => {});
-      // Stop heartbeats — server will auto-shutdown after timeout
-      clearInterval(heartbeatInterval);
-      toast("Fair winds. The server will dock shortly…");
+      if (!confirm("Return to shore? You will be logged out.")) return;
+      toast("Fair winds, sailor. Until next voyage…");
+      doLogout();
     }
 
     // ── Modal helpers ─────────────────────────────
@@ -961,10 +1419,296 @@
       fetch("/api/heartbeat", { method: "POST" }).catch(() => {});
     }, 2000);
     fetch("/api/heartbeat", { method: "POST" }).catch(() => {});
+    // ── Upload / Import ───────────────────────
+    let pendingFile = null;
+
+    function openImportModal() {
+      pendingFile = null;
+      document.getElementById("upload-file").value = "";
+      document.getElementById("upload-title").value = "";
+      document.getElementById("upload-preview").style.display = "none";
+      document.getElementById("upload-preview").innerHTML = "";
+      document.getElementById("upload-submit-btn").disabled = true;
+      document.getElementById("upload-modal").classList.add("active");
+    }
+
+    function closeUploadModal() {
+      pendingFile = null;
+      closeModal("upload-modal");
+    }
+
+    function stageFile(file) {
+      pendingFile = file;
+      document.getElementById("upload-submit-btn").disabled = false;
+
+      // Generate a client-side title from filename
+      const stem = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+      const typeLabel = file.type.startsWith("image/") ? "Image"
+                      : file.type.startsWith("video/") ? "Video"
+                      : file.type.startsWith("audio/") ? "Audio"
+                      : "Document";
+      document.getElementById("upload-title").value = `${toTitleCase(stem)} (${typeLabel})`;
+
+      // For text files, try to use first line as title
+      if (file.type.startsWith("text/") || file.name.match(/\.(md|txt|csv|json|xml|yaml|yml|js|py|java)$/i)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const lines = reader.result.split("\n");
+          for (const line of lines) {
+            const clean = line.trim().replace(/^#+\s*/, "");
+            if (clean) {
+              document.getElementById("upload-title").value = clean.slice(0, 80);
+              break;
+            }
+          }
+        };
+        reader.readAsText(file.slice(0, 4096));
+      }
+
+      // Preview
+      const preview = document.getElementById("upload-preview");
+      preview.style.display = "block";
+      const sizeKB = (file.size / 1024).toFixed(1);
+      const sizeStr = file.size > 1048576 ? `${(file.size / 1048576).toFixed(1)} MB` : `${sizeKB} KB`;
+
+      if (file.type.startsWith("image/")) {
+        const url = URL.createObjectURL(file);
+        preview.innerHTML = `<img src="${url}" alt="Preview" /><div class="file-info">${escH(file.name)} · ${sizeStr}</div>`;
+      } else if (file.type.startsWith("video/")) {
+        const url = URL.createObjectURL(file);
+        preview.innerHTML = `<video src="${url}" controls></video><div class="file-info">${escH(file.name)} · ${sizeStr}</div>`;
+      } else if (file.type.startsWith("audio/")) {
+        const url = URL.createObjectURL(file);
+        preview.innerHTML = `<audio src="${url}" controls></audio><div class="file-info">${escH(file.name)} · ${sizeStr}</div>`;
+      } else {
+        const icon = file.name.match(/\.pdf$/i) ? "📄" : file.name.match(/\.(zip|tar|gz|rar)$/i) ? "📦" : "📎";
+        preview.innerHTML = `<div style="font-size:2.5rem;opacity:0.5;">${icon}</div><div class="file-info">${escH(file.name)} · ${sizeStr} · ${escH(file.type || 'unknown')}</div>`;
+      }
+    }
+
+    function toTitleCase(str) {
+      return str.replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    document.getElementById("upload-file").addEventListener("change", (e) => {
+      if (e.target.files.length > 0) stageFile(e.target.files[0]);
+    });
+
+    async function submitUpload() {
+      if (!pendingFile) { toast("No file selected.", true); return; }
+      const title = document.getElementById("upload-title").value.trim();
+      const form = new FormData();
+      form.append("file", pendingFile);
+      if (title) form.append("title", title);
+
+      try {
+        const res = await apiFetch(`${API}/api/upload`, { method: "POST", body: form });
+        if (!res.ok) { toast("Failed to upload file.", true); return; }
+        const data = await res.json();
+        closeUploadModal();
+        toast(`Cargo '${data.title}' is now adrift in your sea log.`);
+        loadNotes();
+        loadTagFilters();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    // ── Drag & Drop (whole page) ────────────────
+    let dragCounter = 0;
+    document.addEventListener("dragenter", (e) => {
+      e.preventDefault();
+      dragCounter++;
+      document.getElementById("drop-overlay").classList.add("active");
+    });
+    document.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        document.getElementById("drop-overlay").classList.remove("active");
+      }
+    });
+    document.addEventListener("dragover", (e) => { e.preventDefault(); });
+    document.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      document.getElementById("drop-overlay").classList.remove("active");
+      if (e.dataTransfer.files.length > 0) {
+        openImportModal();
+        // Small delay to let modal render
+        setTimeout(() => stageFile(e.dataTransfer.files[0]), 50);
+      }
+    });
+    // ── Auto-tag: request suggestions from server ───
+    async function autoTag(prefix) {
+      const title = document.getElementById(`${prefix}-title`).value.trim();
+      const content = document.getElementById(`${prefix}-content`).value;
+      const tagsInput = document.getElementById(`${prefix}-tags`);
+      const sugBox = document.getElementById(`${prefix}-suggestions`);
+      const existing = parseTags(tagsInput.value);
+
+      if (!title && !content) {
+        toast("Enter a title or content first so I can suggest tags.", true);
+        return;
+      }
+
+      try {
+        const res = await apiFetch(`${API}/api/auto-tags`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, content, existing_tags: existing })
+        });
+        const data = await res.json();
+        const suggested = data.suggested || [];
+
+        if (suggested.length === 0) {
+          sugBox.innerHTML = `<span style="font-size:0.72rem;color:var(--text-muted);">No additional tags suggested.</span>`;
+          return;
+        }
+
+        sugBox.innerHTML = suggested.map(t =>
+          `<span class="tag-suggestion" onclick="acceptTag(this, '${prefix}', '${escH(t)}')">${escH(t)}</span>`
+        ).join("");
+      } catch {
+        toast("Could not generate suggestions.", true);
+      }
+    }
+
+    function acceptTag(el, prefix, tag) {
+      const input = document.getElementById(`${prefix}-tags`);
+      const current = parseTags(input.value);
+      if (current.map(t => t.toLowerCase()).includes(tag.toLowerCase())) {
+        el.classList.toggle("added");
+        // Remove the tag
+        input.value = current.filter(t => t.toLowerCase() !== tag.toLowerCase()).join(", ");
+        return;
+      }
+      current.push(tag);
+      input.value = current.join(", ");
+      el.classList.add("added");
+    }
+
+    // ── Inline tag editing on expanded note ───────
+    async function saveInlineTags(fileId, inputId) {
+      const input = document.getElementById(inputId);
+      const tags = parseTags(input.value);
+      try {
+        const res = await apiFetch(`${API}/api/notes/${encodeURIComponent(fileId)}/tags`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tags })
+        });
+        if (!res.ok) { toast("Failed to save tags.", true); return; }
+        toast("Tags updated.");
+        loadNotes();
+        loadTagFilters();
+      } catch { toast("Could not reach the server.", true); }
+    }
+
+    async function autoTagInline(fileId, inputId) {
+      const input = document.getElementById(inputId);
+      const existing = parseTags(input.value);
+
+      // Fetch note content for auto-tag analysis
+      try {
+        const noteRes = await apiFetch(`${API}/api/notes/${encodeURIComponent(fileId)}`);
+        const noteData = await noteRes.json();
+
+        const res = await apiFetch(`${API}/api/auto-tags`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: noteData.title || fileId,
+            content: noteData.content || "",
+            existing_tags: existing
+          })
+        });
+        const data = await res.json();
+        const suggested = data.suggested || [];
+
+        if (suggested.length === 0) {
+          toast("No additional tags suggested.");
+          return;
+        }
+
+        // Prompt user: accept all suggested tags?
+        const accept = confirm(`Suggested tags: ${suggested.join(", ")}\n\nAdd these tags?`);
+        if (accept) {
+          const merged = [...existing, ...suggested];
+          input.value = merged.join(", ");
+          await saveInlineTags(fileId, inputId);
+        }
+      } catch { toast("Could not generate suggestions.", true); }
+    }
 
     // ── Init ──────────────────────────────────────
-    loadNotes();
-    loadCaptain();
+    // Auth-gated: check session first
+    let currentAuthMode = 'login';
+
+    function switchAuthTab(mode) {
+      currentAuthMode = mode;
+      document.getElementById('tab-login').classList.toggle('active', mode === 'login');
+      document.getElementById('tab-register').classList.toggle('active', mode === 'register');
+      document.getElementById('auth-submit-btn').textContent = mode === 'login' ? 'Sign In' : 'Register';
+      document.getElementById('auth-error').textContent = '';
+    }
+
+    async function handleAuth(e) {
+      e.preventDefault();
+      const username = document.getElementById('auth-username').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const errorEl = document.getElementById('auth-error');
+      errorEl.textContent = '';
+
+      if (!username || !password) { errorEl.textContent = 'Both fields are required.'; return false; }
+
+      const endpoint = currentAuthMode === 'login' ? '/api/login' : '/api/register';
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          errorEl.textContent = data?.description || data?.error || 'Authentication failed.';
+          return false;
+        }
+        enterApp(username);
+      } catch {
+        errorEl.textContent = 'Could not reach the server.';
+      }
+      return false;
+    }
+
+    function enterApp(username) {
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-main').style.display = 'block';
+      document.getElementById('username-display').textContent = username;
+      loadNotes();
+      loadCaptain();
+      loadTagFilters();
+    }
+
+    async function doLogout() {
+      await fetch('/api/logout', { method: 'POST' }).catch(() => {});
+      document.getElementById('app-main').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+      document.getElementById('auth-username').value = '';
+      document.getElementById('auth-password').value = '';
+      document.getElementById('auth-error').textContent = '';
+      allNotes = [];
+    }
+
+    // Check if already logged in
+    (async function checkSession() {
+      try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        if (data.authenticated) {
+          enterApp(data.username);
+        }
+      } catch { /* show login screen */ }
+    })();
   </script>
 </body>
 </html>
