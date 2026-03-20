@@ -8,14 +8,20 @@ import os
 import sys
 from pathlib import Path
 
+APP_NAME = "Future Proof Notes Manager"
+APP_VERSION = "0.0"
+ROOT_NOTES_DIR_NAME = ".notes"
+STARTUP_DIVIDER_WIDTH = 40
+PROMPT_LABEL = "notes> "
+
 
 def setup():
     """Initialize the notes application."""
-    print("Future Proof Notes Manager v0.0")
-    print("=" * 40)
+    print(f"{APP_NAME} v{APP_VERSION}")
+    print("=" * STARTUP_DIVIDER_WIDTH)
 
     # Define the notes directory in HOME
-    notes_dir = Path.home() / ".notes"
+    notes_dir = Path.home() / ROOT_NOTES_DIR_NAME
 
     # Check if notes directory exists
     if not notes_dir.exists():
@@ -43,7 +49,7 @@ def command_loop():
     while True:
         try:
             # Get user input
-            command = input("notes> ").strip().lower()
+            command = input(PROMPT_LABEL).strip().lower()
 
             # Handle empty input
             if not command:

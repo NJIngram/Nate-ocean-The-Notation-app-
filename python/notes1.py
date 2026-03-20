@@ -15,11 +15,19 @@ or create the directory structure:
 import sys
 from pathlib import Path
 
+APP_NAME = "Future Proof Notes Manager"
+APP_VERSION = "0.1"
+SCRIPT_NAME = "notes1.py"
+ROOT_NOTES_DIR_NAME = ".notes"
+NESTED_NOTES_DIR_NAME = "notes"
+NOTE_EXTENSIONS = (".md", ".note", ".txt")
+LIST_DIVIDER_WIDTH = 60
+
 
 def setup():
     """Initialize the notes application."""
     # Define the notes directory in HOME
-    notes_dir = Path.home() / ".notes"
+    notes_dir = Path.home() / ROOT_NOTES_DIR_NAME
 
     # Check if notes directory exists
     if not notes_dir.exists():
@@ -73,20 +81,19 @@ def list_notes(notes_dir):
     # Check if notes directory exists
     if not notes_dir.exists():
         print(f"Error: Notes directory does not exist: {notes_dir}", file=sys.stderr)
-        print("Create it with: mkdir -p ~/.notes/notes", file=sys.stderr)
-        print("Then copy test notes: cp test-notes/*.md ~/.notes/notes/", file=sys.stderr)
+        print(f"Create it with: mkdir -p ~/{ROOT_NOTES_DIR_NAME}/{NESTED_NOTES_DIR_NAME}", file=sys.stderr)
+        print(f"Then copy test notes: cp test-notes/*.md ~/{ROOT_NOTES_DIR_NAME}/{NESTED_NOTES_DIR_NAME}/", file=sys.stderr)
         return False
 
     # Look for notes in the notes directory (or directly in .notes)
-    notes_subdir = notes_dir / "notes"
+    notes_subdir = notes_dir / NESTED_NOTES_DIR_NAME
     search_dirs = [notes_subdir] if notes_subdir.exists() else [notes_dir]
 
     # Find all note files (*.md, *.note, *.txt)
     note_files = []
     for search_dir in search_dirs:
-        note_files.extend(search_dir.glob("*.md"))
-        note_files.extend(search_dir.glob("*.note"))
-        note_files.extend(search_dir.glob("*.txt"))
+        for ext in NOTE_EXTENSIONS:
+            note_files.extend(search_dir.glob(f"*{ext}"))
 
     if not note_files:
         print(f"No notes found in {notes_dir}")
@@ -95,7 +102,7 @@ def list_notes(notes_dir):
 
     # Parse and display notes
     print(f"Notes in {notes_dir}:")
-    print("=" * 60)
+    print("=" * LIST_DIVIDER_WIDTH)
 
     for note_file in sorted(note_files):
         metadata = parse_yaml_header(note_file)
@@ -117,21 +124,28 @@ def list_notes(notes_dir):
 def show_help():
     """Display help information."""
     help_text = """
-Future Proof Notes Manager v0.1
+{name} v{version}
 
-Usage: notes1.py [command]
+Usage: {script} [command]
 
 Available commands:
   help    - Display this help information
   list    - List all notes in the notes directory
 
-Notes directory: {}
+Notes directory: {notes_dir}
 
 Setup:
   To test the 'list' command, copy sample notes:
-    mkdir -p ~/.notes/notes
-    cp test-notes/*.md ~/.notes/notes/
-    """.format(Path.home() / ".notes")
+    mkdir -p ~/{root}/{nested}
+    cp test-notes/*.md ~/{root}/{nested}/
+    """.format(
+        name=APP_NAME,
+        version=APP_VERSION,
+        script=SCRIPT_NAME,
+        notes_dir=Path.home() / ROOT_NOTES_DIR_NAME,
+        root=ROOT_NOTES_DIR_NAME,
+        nested=NESTED_NOTES_DIR_NAME,
+    )
     print(help_text.strip())
 
 
@@ -149,8 +163,8 @@ def main():
     if len(sys.argv) < 2:
         # No command provided
         print("Error: No command provided.", file=sys.stderr)
-        print("Usage: notes1.py [command]", file=sys.stderr)
-        print("Try 'notes1.py help' for more information.", file=sys.stderr)
+        print(f"Usage: {SCRIPT_NAME} [command]", file=sys.stderr)
+        print(f"Try '{SCRIPT_NAME} help' for more information.", file=sys.stderr)
         finish(1)
 
     command = sys.argv[1].lower()
@@ -164,7 +178,7 @@ def main():
         finish(0 if success else 1)
     else:
         print(f"Error: Unknown command '{command}'", file=sys.stderr)
-        print("Try 'notes1.py help' for more information.", file=sys.stderr)
+        print(f"Try '{SCRIPT_NAME} help' for more information.", file=sys.stderr)
         finish(1)
 
 

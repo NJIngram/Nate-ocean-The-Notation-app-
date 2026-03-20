@@ -10,6 +10,12 @@ import notes2
 
 app = Flask(__name__, static_folder="static")
 
+SERVER_PORT = 5001
+SERVER_HOST_URL = f"http://localhost:{SERVER_PORT}"
+HEARTBEAT_TIMEOUT = 6   # seconds without a heartbeat before shutdown
+HEARTBEAT_CHECK_INTERVAL = 2  # seconds between heartbeat checks
+BROWSER_OPEN_DELAY = 1.0  # seconds before opening browser
+
 # Use the same notes directory as the CLI app
 NOTES_DIR = Path.home() / notes2.ROOT_NOTES_DIR_NAME
 
@@ -207,7 +213,6 @@ def wash_note(note_id):
 
 # ── Heartbeat: shut down when the browser tab is closed ──────
 _last_heartbeat = time.time()
-_HEARTBEAT_TIMEOUT = 6
 
 
 @app.route("/api/heartbeat", methods=["POST"])
@@ -221,8 +226,8 @@ def heartbeat():
 def _heartbeat_watcher():
     """Background thread that shuts down the server when heartbeats stop."""
     while True:
-        time.sleep(2)
-        if time.time() - _last_heartbeat > _HEARTBEAT_TIMEOUT:
+        time.sleep(HEARTBEAT_CHECK_INTERVAL)
+        if time.time() - _last_heartbeat > HEARTBEAT_TIMEOUT:
             print("\nNo heartbeat — browser tab closed. Shutting down.")
             os.kill(os.getpid(), signal.SIGTERM)
             return
@@ -232,5 +237,5 @@ if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         watcher = threading.Thread(target=_heartbeat_watcher, daemon=True)
         watcher.start()
-        threading.Timer(1.0, lambda: webbrowser.open("http://localhost:5001")).start()
-    app.run(debug=True, port=5001)
+        threading.Timer(BROWSER_OPEN_DELAY, lambda: webbrowser.open(SERVER_HOST_URL)).start()
+    app.run(debug=True, port=SERVER_PORT)
