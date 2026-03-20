@@ -473,17 +473,47 @@ def read_note(notes_dir, title=""):
         print(f"Bottled message '{title}' is saved, still afloat among the waves in your sea log.")
     else:
         print(f"Bottled message '{title}' was not found among the waves in this harbor.")
-def build_frontmatter(title, tags=None):
+def build_frontmatter(title, tags=None, creator=None):
     """Build a YAML frontmatter string for a new note."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     tag_list = tags if tags else "[]"
-    return f"---\ntitle: {title}\ncreated: {now}\nmodified: {now}\ntags: {tag_list}\n---\n\n"
+    creator = creator or get_current_user_id()
+    return (
+        f"---\ntitle: {title}\ncreated: {now}\nmodified: {now}\n"
+        f"creator: {creator}\nlast_opened: {now}\nlast_accessed_by: {creator}\n"
+        f"tags: {tag_list}\n---\n\n"
+    )
 
 
 def update_modified_timestamp(content):
     """Update the modified timestamp in YAML frontmatter to now."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return re.sub(r'modified: .+', f'modified: {now}', content)
+
+
+def update_yaml_field(content, key, value):
+    """Update or insert a single YAML frontmatter field."""
+    if not content.startswith("---\n"):
+        return content
+    end = content.find("\n---\n", 4)
+    if end == -1:
+        return content
+    fm = content[:end]
+    rest = content[end:]
+    pattern = rf'^{re.escape(key)}: .*$'
+    new_fm, count = re.subn(pattern, f'{key}: {value}', fm, flags=re.MULTILINE)
+    if count > 0:
+        return new_fm + rest
+    return fm + f'\n{key}: {value}' + rest
+
+
+def touch_note_access(content, user_id=None):
+    """Update last_opened and last_accessed_by in YAML frontmatter."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    user_id = user_id or get_current_user_id()
+    content = update_yaml_field(content, "last_opened", now)
+    content = update_yaml_field(content, "last_accessed_by", user_id)
+    return content
 
 
 def split_frontmatter(content):
