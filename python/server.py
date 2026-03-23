@@ -3,6 +3,8 @@ from functools import wraps
 from pathlib import Path
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
+import csv
+import io
 import mimetypes
 import os
 import re
@@ -70,6 +72,12 @@ def _user_attachments_dir(username: str) -> Path:
     return d
 
 
+def _user_datasets_dir(username: str) -> Path:
+    d = _user_notes_dir(username) / "datasets"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
 # ── Auth decorator ─────────────────────────────────
 def login_required(f):
     @wraps(f)
@@ -87,6 +95,10 @@ def _current_notes_dir():
 
 def _current_attachments_dir():
     return _user_attachments_dir(session["username"])
+
+
+def _current_datasets_dir():
+    return _user_datasets_dir(session["username"])
 
 
 @app.route("/")
@@ -582,6 +594,304 @@ def upload_file():
         "attachment": stored_name,
         "generated_title": title
     }), 201
+
+
+# ── Datasets: upload, list, preview, delete ───────
+DATASET_EXTENSIONS = {".csv", ".json", ".tsv", ".jsonl"}
+DATASET_MAX_PREVIEW_ROWS = 50
+
+
+def _load_dataset_meta(meta_path):
+    """Load a .dataset.yml sidecar file as a dict (simple key: value parser)."""
+    meta = {}
+    if not meta_path.exists():
+        return meta
+    current_key = None
+    list_items = []
+    schema_items = []
+    in_schema = False
+    in_list = False
+
+    for line in meta_path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        # Schema block (list of objects with name/type)
+        if in_schema:
+            if line.startswith("  - name:"):
+                schema_items.append({"name": line.split(":", 1)[1].strip()})
+                continue
+            elif line.startswith("    type:") and schema_items:
+                schema_items[-1]["type"] = line.split(":", 1)[1].strip()
+                continue
+            elif line.startswith("    nullable:") and schema_items:
+                schema_items[-1]["nullable"] = line.split(":", 1)[1].strip().lower() == "true"
+                continue
+            elif not line.startswith(" "):
+                meta["schema"] = schema_items
+                in_schema = False
+                # fall through to parse current line
+            else:
+                continue
+
+        # Simple list block (tags etc.)
+        if in_list and line.startswith("  - "):
+            list_items.append(stripped.lstrip("- ").strip())
+            continue
+        elif in_list:
+            meta[current_key] = list_items
+            in_list = False
+            list_items = []
+            current_key = None
+
+        if ":" in stripped:
+            key, val = stripped.split(":", 1)
+            key = key.strip()
+            val = val.strip()
+            if val == "":
+                if key == "schema":
+                    in_schema = True
+                    schema_items = []
+                else:
+                    in_list = True
+                    current_key = key
+                    list_items = []
+            else:
+                meta[key] = val
+
+    if in_list and current_key:
+        meta[current_key] = list_items
+    if in_schema:
+        meta["schema"] = schema_items
+
+    # Coerce numeric fields
+    for field in ("rowCount", "columnCount", "sizeBytes", "version", "priority"):
+        if field in meta:
+            try:
+                meta[field] = int(meta[field])
+            except (ValueError, TypeError):
+                pass
+    return meta
+
+
+def _save_dataset_meta(meta_path, meta):
+    """Write a dataset sidecar .dataset.yml file."""
+    lines = []
+    simple_keys = [
+        "id", "assetType", "title", "author", "created", "modified",
+        "status", "priority", "format", "encoding", "path",
+        "sizeBytes", "rowCount", "columnCount", "version",
+    ]
+    for k in simple_keys:
+        if k in meta:
+            lines.append(f"{k}: {meta[k]}")
+    if "tags" in meta and isinstance(meta["tags"], list):
+        lines.append("tags:")
+        for t in meta["tags"]:
+            lines.append(f"  - {t}")
+    if "schema" in meta and isinstance(meta["schema"], list):
+        lines.append("schema:")
+        for col in meta["schema"]:
+            lines.append(f"  - name: {col.get('name', '')}")
+            lines.append(f"    type: {col.get('type', 'string')}")
+    if "source" in meta and isinstance(meta["source"], dict):
+        lines.append("source:")
+        for sk, sv in meta["source"].items():
+            lines.append(f"  {sk}: {sv}")
+    meta_path.write_text("\n".join(lines) + "\n")
+
+
+def _infer_column_type(values):
+    """Guess a column type from a sample of string values."""
+    nums = 0
+    for v in values[:100]:
+        v = v.strip()
+        if not v:
+            continue
+        try:
+            float(v)
+            nums += 1
+        except ValueError:
+            pass
+    total = sum(1 for v in values[:100] if v.strip())
+    if total and nums / max(total, 1) > 0.8:
+        return "number"
+    return "string"
+
+
+def _parse_dataset_preview(file_path, fmt, max_rows=DATASET_MAX_PREVIEW_ROWS):
+    """Return (columns, rows, row_count, col_count) for a dataset file."""
+    text = file_path.read_text(errors="replace")
+    columns = []
+    rows = []
+
+    if fmt in ("csv", "tsv"):
+        delimiter = "\t" if fmt == "tsv" else ","
+        reader = csv.reader(io.StringIO(text), delimiter=delimiter)
+        all_rows = list(reader)
+        if not all_rows:
+            return columns, rows, 0, 0
+        columns = all_rows[0]
+        data_rows = all_rows[1:]
+        rows = data_rows[:max_rows]
+        return columns, rows, len(data_rows), len(columns)
+
+    elif fmt == "json":
+        data = json.loads(text)
+        if isinstance(data, list) and data and isinstance(data[0], dict):
+            columns = list(data[0].keys())
+            rows = [list(row.get(c, "") for c in columns) for row in data[:max_rows]]
+            return columns, rows, len(data), len(columns)
+        return columns, rows, 0, 0
+
+    elif fmt == "jsonl":
+        lines = [l for l in text.splitlines() if l.strip()]
+        if not lines:
+            return columns, rows, 0, 0
+        first = json.loads(lines[0])
+        if isinstance(first, dict):
+            columns = list(first.keys())
+        for line in lines[:max_rows]:
+            obj = json.loads(line)
+            rows.append([obj.get(c, "") for c in columns])
+        return columns, rows, len(lines), len(columns)
+
+    return columns, rows, 0, 0
+
+
+@app.route("/api/datasets", methods=["GET"])
+@login_required
+def list_datasets():
+    """List all datasets for the current user."""
+    ds_dir = _current_datasets_dir()
+    datasets = []
+    for meta_file in sorted(ds_dir.glob("*.dataset.yml")):
+        meta = _load_dataset_meta(meta_file)
+        meta.setdefault("id", meta_file.stem.replace(".dataset", ""))
+        datasets.append(meta)
+    return jsonify(datasets)
+
+
+@app.route("/api/datasets", methods=["POST"])
+@login_required
+def upload_dataset():
+    """Upload a dataset file (CSV, JSON, TSV, JSONL)."""
+    if "file" not in request.files:
+        abort(400, description="No file provided")
+
+    uploaded = request.files["file"]
+    if not uploaded.filename:
+        abort(400, description="Empty filename")
+
+    original_name = uploaded.filename
+    ext = Path(original_name).suffix.lower()
+    if ext not in DATASET_EXTENSIONS:
+        abort(400, description=f"Unsupported format. Accepted: {', '.join(sorted(DATASET_EXTENSIONS))}")
+
+    file_bytes = uploaded.read()
+    fmt = ext.lstrip(".")
+
+    ds_dir = _current_datasets_dir()
+    safe_stem = re.sub(r'[^\w.\-]', '_', Path(original_name).stem)[:60]
+    stored_name = f"{uuid.uuid4().hex[:8]}_{safe_stem}{ext}"
+    dest = ds_dir / stored_name
+    dest.write_bytes(file_bytes)
+
+    # Parse to get schema and row/column counts
+    columns, rows, row_count, col_count = _parse_dataset_preview(dest, fmt)
+
+    # Infer column types from first rows
+    schema = []
+    if columns and rows:
+        for ci, col_name in enumerate(columns):
+            sample = [r[ci] if ci < len(r) else "" for r in rows]
+            col_type = _infer_column_type([str(v) for v in sample])
+            schema.append({"name": col_name, "type": col_type})
+    elif columns:
+        schema = [{"name": c, "type": "string"} for c in columns]
+
+    title = request.form.get("title", "").strip()
+    if not title:
+        title = re.sub(r'[-_]+', ' ', safe_stem).strip().title() or "Untitled Dataset"
+
+    ds_id = f"ds_{uuid.uuid4().hex[:12]}"
+    now = time.strftime(notes2.DATETIME_FORMAT, time.gmtime())
+
+    meta = {
+        "id": ds_id,
+        "assetType": "dataset",
+        "title": title,
+        "author": session["username"],
+        "created": now,
+        "modified": now,
+        "tags": [],
+        "status": "active",
+        "format": fmt,
+        "encoding": "utf-8",
+        "path": stored_name,
+        "sizeBytes": len(file_bytes),
+        "rowCount": row_count,
+        "columnCount": col_count,
+        "schema": schema,
+        "version": 1,
+        "source": {
+            "kind": "upload",
+            "originalFilename": original_name,
+        },
+    }
+
+    meta_path = ds_dir / f"{stored_name}.dataset.yml"
+    _save_dataset_meta(meta_path, meta)
+
+    return jsonify(meta), 201
+
+
+@app.route("/api/datasets/<ds_id>", methods=["GET"])
+@login_required
+def get_dataset(ds_id):
+    """Return dataset metadata and a preview of its rows."""
+    ds_dir = _current_datasets_dir()
+    # Find the meta file by scanning for matching id
+    for meta_file in ds_dir.glob("*.dataset.yml"):
+        meta = _load_dataset_meta(meta_file)
+        if meta.get("id") == ds_id:
+            data_path = ds_dir / meta.get("path", "")
+            if data_path.exists():
+                cols, rows, rc, cc = _parse_dataset_preview(data_path, meta.get("format", "csv"))
+                meta["preview"] = {"columns": cols, "rows": rows}
+            return jsonify(meta)
+    abort(404, description="Dataset not found")
+
+
+@app.route("/api/datasets/<ds_id>", methods=["DELETE"])
+@login_required
+def delete_dataset(ds_id):
+    """Delete a dataset and its sidecar metadata."""
+    ds_dir = _current_datasets_dir()
+    for meta_file in ds_dir.glob("*.dataset.yml"):
+        meta = _load_dataset_meta(meta_file)
+        if meta.get("id") == ds_id:
+            data_path = ds_dir / meta.get("path", "")
+            if data_path.exists():
+                data_path.unlink()
+            meta_file.unlink()
+            return jsonify({"message": "Dataset deleted", "id": ds_id})
+    abort(404, description="Dataset not found")
+
+
+@app.route("/api/datasets/<ds_id>/download")
+@login_required
+def download_dataset(ds_id):
+    """Serve the raw dataset file."""
+    ds_dir = _current_datasets_dir()
+    for meta_file in ds_dir.glob("*.dataset.yml"):
+        meta = _load_dataset_meta(meta_file)
+        if meta.get("id") == ds_id:
+            data_path = ds_dir / meta.get("path", "")
+            if data_path.exists():
+                return send_from_directory(ds_dir, data_path.name, as_attachment=True)
+    abort(404, description="Dataset not found")
 
 
 @app.route("/api/heartbeat", methods=["POST"])
